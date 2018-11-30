@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="hgv.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.js"></script>
+    <script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.css" rel="stylesheet" type="text/css" />
+    <!--- jQeury is not required --->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+
+<div id="uniqueID" style="border-style: solid; border-color: lightgrey; width: calc(100%); height: 910px; right: 0;"></div><br>
+
+<script>
+
+    // The template for the hierarchical glycan viewer
+    var demo_option_new = {
+        essentials : {
+            div_ID : "uniqueID", // the ID of div container
+            component : {}, // the data
+            topoOnly : 0,
+            viewRoot : "",
+            useGlyTouCanAsImageSource : true,
+            GlyTouCanImagePara: {
+                style: "extended", // Other Options: normal, compact
+                format: "png", // Other Options: jpg
+                notation: "cfg" // Other Options: cfgbw, uoxf, uoxf-color, cfg-uoxf, iupac
+            },
+            imgURL1 : "img/", // Unnecessary if useGlyTouCanAsImageSource is true
+            imgURL2 : ".png"
+        },
+        display : {
+            enableTitle: false,
+            enableNavi: true,
+            naviOption: {
+                size: 0.2,
+                position: 4
+            },
+            orientation: 1 // 1, 2, 3, 4 Stand for top2bottom left2right bottom2top right2left
+        },
+        contextMenu : {
+            enable: true,
+            defaultMenu: false,
+            externalURL1: "https://edwardslab.bmcb.georgetown.edu/glycomotifdev/GM.",
+            externalURL2: ""
+        }
+    };
+
+    // Deep copy the template option, and change the parameters accordingly
+    var option1 = demo_option_new;
+    option1.essentials.component = {"mw": "Unknown", "nodes": {"G00012MO": {"type": "Whatever", "name": "G00012MO", "level": 0}, "G00072MO": {"type": "Whatever", "name": "G00072MO", "level": 0}, "Topology": {"alternativeImageURL": "https://glytoucan.org/glycans/G00012MO/image?style=compact&format=png&notation=cfg", "type": "Whatever", "name": "Topology", "level": 0}}, "root": "Topology", "name": "Topology", "edges": {"Topology": [{"to": "G00012MO", "from": "Topology", "type": "contains"}, {"to": "G00072MO", "from": "Topology", "type": "contains"}]}};
+
+    var hgv1 = jQuery.extend(true, {}, glycanviewer);
+    hgv1.init(option1);
+
+    /*
+    * Alternatively, the option can directly apply to the glycanviewer like this
+    * glycanviewer.init(option1)
+    */
+
+
+
+</script>
+</body>
+</html>
