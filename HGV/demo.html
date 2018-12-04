@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="hgv.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/glygen-glycan-data/JSWidgets/HGV/hgv.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.js"></script>
     <script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.css" rel="stylesheet" type="text/css" />
@@ -49,7 +49,22 @@
 
     // Deep copy the template option, and change the parameters accordingly
     var option1 = demo_option_new;
-    option1.essentials.component = {"mw": "Unknown", "nodes": {"G00012MO": {"type": "Whatever", "name": "G00012MO", "level": 0}, "G00072MO": {"type": "Whatever", "name": "G00072MO", "level": 0}, "Topology": {"alternativeImageURL": "https://glytoucan.org/glycans/G00012MO/image?style=compact&format=png&notation=cfg", "type": "Whatever", "name": "Topology", "level": 0}}, "root": "Topology", "name": "Topology", "edges": {"Topology": [{"to": "G00012MO", "from": "Topology", "type": "contains"}, {"to": "G00072MO", "from": "Topology", "type": "contains"}]}};
+    option1.essentials.component = {
+        "mw": "Unknown",
+        "nodes": {
+            "G00012MO": {"type": "Whatever", "name": "G00012MO", "level": 0},
+            "G00072MO": {"type": "Whatever", "name": "G00072MO", "level": 0},
+            "Topology": {"alternativeImageURL": "https://glytoucan.org/glycans/G00012MO/image?style=compact&format=png&notation=cfg", "type": "Whatever", "name": "Topology", "level": 0}
+            },
+        "root": "Topology",
+        "name": "Topology",
+        "edges": {
+            "Topology": [
+                {"to": "G00012MO", "from": "Topology", "type": "contains"},
+                {"to": "G00072MO", "from": "Topology", "type": "contains"}
+                ]
+        }
+    };
 
     var hgv1 = jQuery.extend(true, {}, glycanviewer);
     hgv1.init(option1);

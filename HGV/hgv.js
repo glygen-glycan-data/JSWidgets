@@ -120,13 +120,6 @@ var glycanviewer = {
         var thisLib = this;
 
         this.component = this.para.essentials.component;
-        for (var node in this.component.nodes){
-            var content = this.component.nodes[node];
-            var things = content.name.split("_");
-            content.id = content.name;
-            content.label = content.name;
-            content.name = things[0];
-        }
         var topoonly = this.para.essentials.topoOnly;
 
         var component = this.component;
@@ -435,6 +428,13 @@ var glycanviewer = {
             d.level -= rootlevel;
             d.shape = 'image';
 
+            d.id = d.name;
+
+            if (d.label){}
+            else{
+                d.label = d.name;
+            }
+
             d.borderColor = "#FFFFFF";
             d.shapeProperties = {
                 useBorderWithImage: true
@@ -556,86 +556,86 @@ var glycanviewer = {
 
     defaultContextMenu: function(){
         var thisLib = this;
-            // Context menu, pop-up when you right click
-            // The default context menu give you to chance to change to sub graph view
-            thisLib.div_network.addEventListener("contextmenu",rightClickMenuGenerator,false);
+        // Context menu, pop-up when you right click
+        // The default context menu give you to chance to change to sub graph view
+        thisLib.div_network.addEventListener("contextmenu",rightClickMenuGenerator,false);
 
-            function rightClickMenuGenerator(clickData){
-                //console.log(clickData);
-                document.addEventListener("click",clearEverythingInContextMenu,{once: true});
+        function rightClickMenuGenerator(clickData){
+            //console.log(clickData);
+            document.addEventListener("click",clearEverythingInContextMenu,{once: true});
 
-                var menuELE = thisLib.div_contextMenu;
-                var menuList = document.createElement("dl");
+            var menuELE = thisLib.div_contextMenu;
+            var menuList = document.createElement("dl");
 
-                clearEverythingInContextMenu();
-                //var x = clickData.pointer.DOM.x;
-                //var y = clickData.pointer.DOM.y;
-                var x = clickData.layerX;
-                var y = clickData.layerY;
-                clickData.preventDefault();
+            clearEverythingInContextMenu();
+            //var x = clickData.pointer.DOM.x;
+            //var y = clickData.pointer.DOM.y;
+            var x = clickData.layerX;
+            var y = clickData.layerY;
+            clickData.preventDefault();
 
-                var root = thisLib.rootname;
-                //var selectedNodes = thisLib.network.getSelectedNodes();
-                var selectedNode = thisLib.network.getNodeAt({x:x,y:y});
-                var selectedNodes = [ selectedNode ];
-                var connectedNodes = [];
+            var root = thisLib.rootname;
+            //var selectedNodes = thisLib.network.getSelectedNodes();
+            var selectedNode = thisLib.network.getNodeAt({x:x,y:y});
+            var selectedNodes = [ selectedNode ];
+            var connectedNodes = [];
 
-                //updateList("Close Menu","dt");
-                menuELE.style = "margin: 0; padding: 0; overflow: hidden; position: absolute; left: "+x+"px; top: "+y+"px; background-color: #333333; border: none; ";//width: 100px; height: 100px
+            //updateList("Close Menu","dt");
+            menuELE.style = "margin: 0; padding: 0; overflow: hidden; position: absolute; left: "+x+"px; top: "+y+"px; background-color: #333333; border: none; ";//width: 100px; height: 100px
 
-                updateList("Jump to Composition:", "dt");
-                updateList(root, "dd");
+            updateList("Jump to Composition:", "dt");
+            updateList(root, "dd");
 
-                if (selectedNode !== undefined){
-                    selectedNodes.forEach(function(nodeID){
-                        var c0 = thisLib.network.getConnectedNodes(nodeID);
-                        connectedNodes = connectedNodes.concat(c0);
-                    });
+            if (selectedNode !== undefined){
+                selectedNodes.forEach(function(nodeID){
+                    var c0 = thisLib.network.getConnectedNodes(nodeID);
+                    connectedNodes = connectedNodes.concat(c0);
+                });
 
-                    updateList("Jump to Selected Nodes:","dt");
-                    selectedNodes.forEach(function(nodeID){
+                updateList("Jump to Selected Nodes:","dt");
+                selectedNodes.forEach(function(nodeID){
+                    updateList(nodeID,"dd");
+                });
+
+                if (connectedNodes.length > 0){
+                    updateList("Jump to Connected Nodes:","dt");
+                    connectedNodes.forEach(function(nodeID){
                         updateList(nodeID,"dd");
                     });
+                }
+            }
 
-                    if (connectedNodes.length > 0){
-                        updateList("Jump to Connected Nodes:","dt");
-                        connectedNodes.forEach(function(nodeID){
-                            updateList(nodeID,"dd");
-                        });
+            menuELE.appendChild(menuList);
+
+            function updateList(id,DOMType){
+                // dds are used to call functions
+                // dts are just descriptive words
+
+                var entry = document.createElement(DOMType);
+                entry.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none;";
+                entry.onmouseover = function(d){
+                    entry.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none; background-color: #111111";
+                };
+                entry.onmouseout = function(d){
+                    entry.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none; background-color: #333333";
+                };
+                entry.innerHTML = id;
+                if(id == "Close Menu"){
+                    entry.onclick = function(){
+                        clearEverythingInContextMenu();
                     }
                 }
-
-                menuELE.appendChild(menuList);
-
-                function updateList(id,DOMType){
-                    // dds are used to call functions
-                    // dts are just descriptive words
-
-                    var entry = document.createElement(DOMType);
-                    entry.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none;";
-                    entry.onmouseover = function(d){
-                        entry.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none; background-color: #111111";
-                    };
-                    entry.onmouseout = function(d){
-                        entry.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none; background-color: #333333";
-                    };
-                    entry.innerHTML = id;
-                    if(id == "Close Menu"){
-                        entry.onclick = function(){
-                            clearEverythingInContextMenu();
-                        }
+                else if (DOMType == "dd"){
+                    entry.onclick = function(){
+                        var para = thisLib.para;
+                        para.essentials.viewRoot = id;
+                        thisLib.init(para)
                     }
-                    else if (DOMType == "dd"){
-                        entry.onclick = function(){
-                            var para = thisLib.para;
-                            para.essentials.viewRoot = id;
-                            thisLib.init(para)
-                        }
-                    }
-                    menuList.appendChild(entry);
-                    return 0;
-
                 }
+                menuList.appendChild(entry);
+                return 0;
+
+            }
 
 
         }
@@ -1078,7 +1078,6 @@ var glycanviewer = {
         d3.keys(component.nodes).forEach(function (k) {
             var d = component.nodes[k];
             d.id = d.name;
-            d.label = d.name;
             d.level -= rootlevel;
             d.shape = 'image';
             //d.image = "http://glytoucan.org/glycans/"+d.name+"/image?style=extended&format=png&notation=cfg";
