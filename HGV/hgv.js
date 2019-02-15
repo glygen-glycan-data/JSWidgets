@@ -120,13 +120,6 @@ var glycanviewer = {
         var thisLib = this;
 
         this.component = this.para.essentials.component;
-        for (var node in this.component.nodes){
-            var content = this.component.nodes[node];
-            var things = content.name.split("_");
-            content.id = content.name;
-            content.label = content.name;
-            content.name = things[0];
-        }
         var topoonly = this.para.essentials.topoOnly;
 
         var component = this.component;
@@ -435,16 +428,23 @@ var glycanviewer = {
             d.level -= rootlevel;
             d.shape = 'image';
 
+            d.id = d.name;
+
+            if (d.label){}
+            else{
+                d.label = d.name;
+            }
+
             d.borderColor = "#FFFFFF";
             d.shapeProperties = {
-                useBorderWithImage: true
+                useBorderWithImage: true,
+                useImageSize: true
             };
 
             d.image = d.imageURL;
 
             //d.brokenImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII";
 
-            d.size = NaN;
 
             if (displaynodes[k] != 1) {
                 //d.hidden = true;
@@ -556,105 +556,9 @@ var glycanviewer = {
 
     defaultContextMenu: function(){
         var thisLib = this;
-            // Context menu, pop-up when you right click
-            // The default context menu give you to chance to change to sub graph view
-            thisLib.div_network.addEventListener("contextmenu",rightClickMenuGenerator,false);
-
-            function rightClickMenuGenerator(clickData){
-                //console.log(clickData);
-                document.addEventListener("click",clearEverythingInContextMenu,{once: true});
-
-                var menuELE = thisLib.div_contextMenu;
-                var menuList = document.createElement("dl");
-
-                clearEverythingInContextMenu();
-                //var x = clickData.pointer.DOM.x;
-                //var y = clickData.pointer.DOM.y;
-                var x = clickData.layerX;
-                var y = clickData.layerY;
-                clickData.preventDefault();
-
-                var root = thisLib.rootname;
-                //var selectedNodes = thisLib.network.getSelectedNodes();
-                var selectedNode = thisLib.network.getNodeAt({x:x,y:y});
-                var selectedNodes = [ selectedNode ];
-                var connectedNodes = [];
-
-                //updateList("Close Menu","dt");
-                menuELE.style = "margin: 0; padding: 0; overflow: hidden; position: absolute; left: "+x+"px; top: "+y+"px; background-color: #333333; border: none; ";//width: 100px; height: 100px
-
-                updateList("Jump to Composition:", "dt");
-                updateList(root, "dd");
-
-                if (selectedNode !== undefined){
-                    selectedNodes.forEach(function(nodeID){
-                        var c0 = thisLib.network.getConnectedNodes(nodeID);
-                        connectedNodes = connectedNodes.concat(c0);
-                    });
-
-                    updateList("Jump to Selected Nodes:","dt");
-                    selectedNodes.forEach(function(nodeID){
-                        updateList(nodeID,"dd");
-                    });
-
-                    if (connectedNodes.length > 0){
-                        updateList("Jump to Connected Nodes:","dt");
-                        connectedNodes.forEach(function(nodeID){
-                            updateList(nodeID,"dd");
-                        });
-                    }
-                }
-
-                menuELE.appendChild(menuList);
-
-                function updateList(id,DOMType){
-                    // dds are used to call functions
-                    // dts are just descriptive words
-
-                    var entry = document.createElement(DOMType);
-                    entry.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none;";
-                    entry.onmouseover = function(d){
-                        entry.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none; background-color: #111111";
-                    };
-                    entry.onmouseout = function(d){
-                        entry.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none; background-color: #333333";
-                    };
-                    entry.innerHTML = id;
-                    if(id == "Close Menu"){
-                        entry.onclick = function(){
-                            clearEverythingInContextMenu();
-                        }
-                    }
-                    else if (DOMType == "dd"){
-                        entry.onclick = function(){
-                            var para = thisLib.para;
-                            para.essentials.viewRoot = id;
-                            thisLib.init(para)
-                        }
-                    }
-                    menuList.appendChild(entry);
-                    return 0;
-
-                }
-
-
-        }
-
-        function clearEverythingInContextMenu(){
-            //console.log("closing");
-            var menuELE = thisLib.div_contextMenu;
-            while (menuELE.firstChild){
-                menuELE.removeChild(menuELE.firstChild);
-            }
-            menuELE.style = "";
-        }
-    },
-
-    customizedContextMenu: function(){
-        var thisLib = this;
         // Context menu, pop-up when you right click
         // The default context menu give you to chance to change to sub graph view
-        thisLib.div_network.addEventListener("contextmenu", rightClickMenuGenerator, false);
+        thisLib.div_network.addEventListener("contextmenu",rightClickMenuGenerator,false);
 
         function rightClickMenuGenerator(clickData){
             //console.log(clickData);
@@ -679,16 +583,22 @@ var glycanviewer = {
             //updateList("Close Menu","dt");
             menuELE.style = "margin: 0; padding: 0; overflow: hidden; position: absolute; left: "+x+"px; top: "+y+"px; background-color: #333333; border: none; ";//width: 100px; height: 100px
 
-            updateList("Jump to:", "dt");
+            updateList("Jump to Composition:", "dt");
+            updateList(root, "dd");
 
             if (selectedNode !== undefined){
-                connectedNodes = connectedNodes.concat(selectedNodes);
                 selectedNodes.forEach(function(nodeID){
                     var c0 = thisLib.network.getConnectedNodes(nodeID);
                     connectedNodes = connectedNodes.concat(c0);
                 });
 
+                updateList("Jump to Selected Nodes:","dt");
+                selectedNodes.forEach(function(nodeID){
+                    updateList(nodeID,"dd");
+                });
+
                 if (connectedNodes.length > 0){
+                    updateList("Jump to Connected Nodes:","dt");
                     connectedNodes.forEach(function(nodeID){
                         updateList(nodeID,"dd");
                     });
@@ -717,19 +627,107 @@ var glycanviewer = {
                 }
                 else if (DOMType == "dd"){
                     entry.onclick = function(){
-                        var nodeID = this.innerHTML;
-                        var pre, suf;
-                        if (thisLib.para.contextMenu.externalURL1){pre = thisLib.para.contextMenu.externalURL1}else{pre = ""}
-                        if (thisLib.para.contextMenu.externalURL2){suf = thisLib.para.contextMenu.externalURL2}else{suf = ""}
-                        var acc = nodeID.split("_")[0];
-                        var externalURL = pre + acc + suf;
-                        window.open(externalURL);
+                        var para = thisLib.para;
+                        para.essentials.viewRoot = id;
+                        thisLib.init(para)
                     }
                 }
                 menuList.appendChild(entry);
                 return 0;
 
             }
+
+
+        }
+
+        function clearEverythingInContextMenu(){
+            //console.log("closing");
+            var menuELE = thisLib.div_contextMenu;
+            while (menuELE.firstChild){
+                menuELE.removeChild(menuELE.firstChild);
+            }
+            menuELE.style = "";
+        }
+    },
+
+    customizedContextMenu: function(){
+        var thisLib = this;
+        // Context menu, pop-up when you right click
+        // The default context menu give you to chance to change to sub graph view
+        thisLib.div_network.addEventListener("contextmenu", rightClickMenuGenerator, false);
+
+        function rightClickMenuGenerator(clickData){
+            //console.log(clickData);
+            document.addEventListener("click",clearEverythingInContextMenu,{once: true});
+
+            var menuELE = thisLib.div_contextMenu;
+            var menuList = document.createElement("dl");
+
+            clearEverythingInContextMenu();
+
+            var x = clickData.layerX;
+            var y = clickData.layerY;
+            clickData.preventDefault();
+
+            var root = thisLib.rootname;
+            //var selectedNodes = thisLib.network.getSelectedNodes();
+            var selectedNode = thisLib.network.getNodeAt({x:x,y:y});
+            var selectedNodes = [ selectedNode ];
+            var connectedNodes = [];
+
+            //updateList("Close Menu","dt");
+            menuELE.style = "margin: 0; padding: 0; overflow: hidden; position: absolute; left: "+x+"px; top: "+y+"px; background-color: #333333; border: none; ";//width: 100px; height: 100px
+
+            // updateList("Jump to:", "dt");
+
+            if (selectedNode !== undefined && selectedNode !== "Topology" && !selectedNode.startsWith("fake")){
+
+                var entry = document.createElement("dt");
+                entry.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none;";
+                entry.onmouseover = function(d){
+                    entry.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none; background-color: #111111";
+                };
+                entry.onmouseout = function(d){
+                    entry.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none; background-color: #333333";
+                };
+                entry.innerHTML = "Jump to GlycoMotif"; //change the description
+                entry.name = selectedNode;
+
+                entry.onclick = function(){
+                    var nodeID = this.name;
+                    var pre, suf;
+                    if (thisLib.para.contextMenu.externalURL1){pre = thisLib.para.contextMenu.externalURL1}else{pre = ""}
+                    if (thisLib.para.contextMenu.externalURL2){suf = thisLib.para.contextMenu.externalURL2}else{suf = ""}
+                    var externalURL = pre + nodeID + suf;
+                    window.open(externalURL);
+                };
+                menuList.appendChild(entry);
+
+                var entry2 = document.createElement("dt");
+                entry2.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none;";
+                entry2.onmouseover = function(d){
+                    entry2.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none; background-color: #111111";
+                };
+                entry2.onmouseout = function(d){
+                    entry2.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none; background-color: #333333";
+                };
+                entry2.innerHTML = "Jump to GlyTouCan"; //change the description
+                entry2.name = selectedNode;
+
+                entry2.onclick = function(){
+                    var nodeID = this.name;
+                    var pre, suf;
+                    pre = "https://glytoucan.org/Structures/Glycans/";
+                    suf = "";
+                    //var acc = nodeID.split("_")[0];
+                    var externalURL = pre + nodeID + suf;
+                    window.open(externalURL);
+                };
+                menuList.appendChild(entry2);
+
+            }
+
+            menuELE.appendChild(menuList);
 
 
         }
@@ -1078,7 +1076,6 @@ var glycanviewer = {
         d3.keys(component.nodes).forEach(function (k) {
             var d = component.nodes[k];
             d.id = d.name;
-            d.label = d.name;
             d.level -= rootlevel;
             d.shape = 'image';
             //d.image = "http://glytoucan.org/glycans/"+d.name+"/image?style=extended&format=png&notation=cfg";
