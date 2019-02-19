@@ -1,0 +1,272 @@
+<HTML>
+<HEAD>
+<link rel="stylesheet" type="text/css" href="http://edwardslab.bmcb.georgetown.edu/css/excel-2007.css">
+</HEAD>
+<BODY>
+<SCRIPT type="text/javascript" src="http://edwardslab.bmcb.georgetown.edu/js/list.d3table.js"></SCRIPT>
+<SCRIPT type="text/javascript" src="http://d3js.org/d3.v2.min.js"></script>
+<DIV align="center" id="container"></DIV>
+<SCRIPT type="text/javascript">
+
+<!-- getAttribute:function(a,c){var d=a.getAttribute&&a.getAttribute(c)||null;if(!d){var e=a.attributes;var f=e.length;for(var g=0;g<f;g++){if(c[g]!==b){if(c[g].nodeName===c){d=c[g].nodeValue}}}}return d},isNodeList:function(a){var b=Object.prototype.toString.call(a);if(typeof a==="object"&&/^\[object (HTMLCollection|NodeList|Object)\]$/.test(b)&&(a.length==0||typeof a[0]==="object"&&a[0].nodeType>0)){return true}return false},hasClass:function(a,b){var c=this.getAttribute(a,"class")||this.getAttribute(a,"className")||"";return c.search(b)>-1},addClass:function(a,b){if(!this.hasClass(a,b)){var c=this.getAttribute(a,"class")||this.getAttribute(a,"className")||"";c=c+" "+b+" ";c=c.replace(/\s{2,}/g," ");a.setAttribute("class",c)}},removeClass:function(a,b){if(this.hasClass(a,b)){var c=this.getAttribute(a,"class")||this.getAttribute(a,"className")||"";c=c.replace(b,"");a.setAttribute("class",c)}} -->
+
+    var thetable;
+    var value = null;
+    function mySort(valueName, compare) {
+        var target = valueName.target || valueName.srcElement, /* IE have srcElement */
+            isAsc = null,
+            asc = 'asc',
+            desc = 'desc'
+        value = ListJsHelpers.getAttribute(target, 'data-sort');
+        isAsc = ListJsHelpers.hasClass(target, asc) ? false : true;
+        for (var i = 0, il = sortButtons.length; i < il; i++) {
+            ListJsHelpers.removeClass(sortButtons[i], asc);
+            ListJsHelpers.removeClass(sortButtons[i], desc);
+        }
+        var sortFunctionAsc = compare;
+        var sortFunctionDesc = function(a,b) {
+          return -sortFunctionAsc(a,b);
+        }
+        if (isAsc) {
+            ListJsHelpers.addClass(target, asc);
+	    thetable.items.sort(sortFunctionAsc);
+        } else {
+            ListJsHelpers.addClass(target, desc);
+	    thetable.items.sort(sortFunctionDesc);
+        }
+        thetable.update();
+	oddeven(thetable);
+    };    
+    function empty2number(x) {
+          if (x == "") {
+            return -1.0e+20; /* neg infinity */
+          }
+          return x;
+    }
+    function numericCompare(a,b) {
+          return (parseFloat(empty2number(a.values()[value])) - parseFloat(empty2number(b.values()[value])));
+    }
+    function numericSort(valueName) {
+      mySort(valueName,numericCompare);
+    }
+    function stringCompare(a,b) {
+	  var av = a.values()[value];
+	  var bv = b.values()[value];
+	  if (av < bv) {
+	    return -1;
+	  }
+	  if (av > bv) {
+	    return 1;
+          }
+	  return 0;
+    }
+    function stringSort(valueName) {
+      mySort(valueName,stringCompare);
+    }
+    function urlText(a) {
+      a = a.toString().replace(/&(lt|gt);/g, function (strMatch, p1){
+        return (p1 == "lt")? "<" : ">";
+      });
+      a = a.replace(/<\/?[^>]+(>|$)/g, "");
+      return a;
+    }
+    function urlCompare(a,b) {
+	  var av = urlText(a.values()[value]);
+	  var bv = urlText(b.values()[value]);
+	  if (av == "" && bv != "") {
+	    return -1;
+	  }
+	  if (av != "" && bv == "") {
+	    return 1;
+          }
+	  if (av < bv) {
+	    return -1;
+	  }
+	  if (av > bv) {
+	    return 1;
+          }
+	  return 0;
+    }    
+    function urlSort(valueName) {
+      mySort(valueName,urlCompare);
+    }
+    function oddevenvalue(row) {
+        var thevalue = "";
+        for (var i = 0, il = sortButtons.length; i < il; i++) {
+            if (ListJsHelpers.hasClass(sortButtons[i], 'oddeven')) {
+              value = ListJsHelpers.getAttribute(sortButtons[i], 'data-sort');
+              thevalue += thevalue + ('|' + row.values()[value]);
+            }
+        }
+        if (thevalue == "") {
+          thevalue = j;
+        }
+        return thevalue;
+    }
+    function oddeven(table) {
+      rows = thetable.listContainer.getElementsByTagName('TR');
+      nrows = rows.length;
+      var theValue = null;
+      var j = 0;
+      for (var i = 1; i < nrows; i++) {
+	  var newValue = oddevenvalue(thetable.items[i-1]);
+        if (newValue != theValue) {
+          j = j + 1;
+          theValue = newValue;
+        }
+        if (j % 2 == 0) {
+          ListJsHelpers.removeClass(rows[i],'odd');
+          ListJsHelpers.addClass(rows[i],'even');
+        } else {
+          ListJsHelpers.removeClass(rows[i],'even');
+          ListJsHelpers.addClass(rows[i],'odd');
+        }
+      }
+    }
+
+                                                                                                              
+
+var dataurl=window.location.search.substring(1);
+if (dataurl) {
+
+  var baseurl=dataurl.substring(0,dataurl.lastIndexOf("/")+1);
+  var colsurl=baseurl+"columns.json"+"?random=" + Math.random();
+
+  var datatype = dataurl.substring(dataurl.lastIndexOf(".")+1).toLowerCase();
+  var parser = d3.json;
+  if (datatype == "tsv") {
+    parser = d3.tsv;
+  } else if (datatype == "csv") {
+    parser = d3.csv;
+  }
+  
+  dataurl = dataurl +"?random=" + Math.random();
+  parser(dataurl, function(data) {
+   d3.json(colsurl, function(columns) {
+
+    var table = d3.select("#container")
+                  .append("table")
+                  .attr("id","thetable")
+		  .attr("class","ExcelTable2007")
+		  .attr("style","table-layout:fixed;")
+		  .attr("width",(window.innerWidth-50)+"px");
+		  // 		  .attr("width","100%");
+    var thead = table.append("thead");
+    var tbody = table.append("tbody").attr("class","list");
+    d3.select("#container")
+	.append("ul")
+	.attr("class","pagination")
+
+    // append the header row
+    thead.append("tr")
+        .selectAll("th")
+        .data(columns)
+        .enter()
+        .append("th")
+	    .attr("align","center")
+	    .attr("valign","bottom")
+	    .attr("width",function(column) {
+	      if (column.width !== undefined) {
+	        return column.width;
+              }
+	      return null;
+            })
+	    .attr("class",function(column) {
+	      if (column.oddeven !== undefined && column.oddeven) {
+	        return "mysort oddeven";
+              } 
+	      return "mysort";
+            })
+	    .attr("data-sort",function(column) { return column.tag; })
+	    .attr("data-type",function(column) { return column.type; })
+            .text(function(column) { return column.label; });
+
+    // create a row for each object in the data
+    var rows = tbody.selectAll("tr")
+        .data(data)
+        .enter()
+        .append("tr");
+
+    // create a cell in each row for each column
+    var cells = rows.selectAll("td")
+        .data(function(row,i) {
+            return columns.map(function(column) {
+		return {column: column, value: row[column.tag]};
+            });
+        })
+        .enter()
+        .append("td")
+	    .attr("align",function(d) { 
+	      if (d.column.align !== undefined) {
+	        return d.column.align;
+              }
+	      return "left";
+	    })
+	    .attr("valign","top")
+	    .attr("class",function (d) {
+	      return d.column.tag; 
+	    })
+            .html(function(d) { 
+	      if (d.column.type == "float" && d.column.fixed !== undefined) {
+	        return parseFloat(d.value).toFixed(d.column.fixed);
+              } else if (d.column.type == "extid" && d.column.exturl !== undefined) {
+	        return "<A href="+d.column.exturl+d.value+">"+d.value+"</A>";
+              } else if (d.column.type == "img" && d.column.imgurl !== undefined) {
+	        url = d.column.imgurl.replace(/{}/g, d.value);
+		var height = ""
+		if (d.column.height !== undefined) {
+		  height = " height=\""+d.column.height+"\"";
+		}
+		if (d.column.width !== undefined) {
+		  width = " width=\""+d.column.width+"\"";
+		}
+		if (d.column.caption) {
+		  return "<P align=\"center\"><IMG style=\"margin: 10px;\" src=\""+url+"\""+height+width+"><br/>"+d.value+"</P>";
+		}
+	        return "<IMG src=\""+url+"\""+height+width+">";
+              };
+	      return d.value; 
+	    });
+
+    var tags = [];
+    columns.forEach(function(col) {
+      tags.push(col.tag);
+    });
+    var options = {valueNames: tags, page: 100000};
+    thetable = new List("thetable",options);
+   
+    sortButtons = ListJsHelpers.getByClass('mysort', thetable.listContainer);
+    for (var i = 0, il = sortButtons.length; i < il; i++) {
+        var button = sortButtons[i];
+        var type = ListJsHelpers.getAttribute(button, 'data-type');
+	var oddevenbool = ListJsHelpers.hasClass(button, 'oddeven')
+	var obj = {target: button};
+        if ((type == 'int') || (type == 'float')) {
+            ListJsHelpers.addEvent(button,'click', numericSort);
+	    if (oddevenbool) {
+	      numericSort(obj);
+            }
+        } else if (type == 'url') {
+            ListJsHelpers.addEvent(button,'click', urlSort);
+	    if (oddevenbool) {
+	      urlSort(obj);
+            }
+        } else {
+	    ListJsHelpers.addEvent(button,'click', stringSort);
+	    if (oddevenbool) {
+	      stringSort(obj);
+            }
+        }
+    }
+
+    oddeven(table);
+    
+  });});
+
+}
+
+</SCRIPT>
+</BODY>
+</HTML>
+
+
