@@ -387,6 +387,9 @@ var glycanviewer = {
                     nodeDistance: thisLib.horizontalSpace
                 }
             },
+            interaction: {
+                dragNodes: false,
+            },
             nodes: {
                 borderWidth: 0,
                 borderWidthSelected: 2,
