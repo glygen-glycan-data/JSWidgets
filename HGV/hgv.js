@@ -32,6 +32,10 @@ var glycanviewer = {
     imageHeight: [],
 
 
+    // Network canvas
+    naviNetwork: 0,
+
+
 
     // Constant
     brokenImageSubstituentBase64: "",
@@ -388,7 +392,7 @@ var glycanviewer = {
                 }
             },
             interaction: {
-                dragNodes: false,
+                dragNodes: true,
             },
             nodes: {
                 borderWidth: 0,
@@ -780,11 +784,14 @@ var glycanviewer = {
         naviNetwork.setOptions(options);
         naviNetwork.setData(data);
 
+        thisLib.naviNetwork = naviNetwork;
+
+
         thisLib.rectPointer = document.createElement("canvas");
         thisLib.rectPointer.setAttribute("style","position: absolute; border: 1px solid lightgray;"); // border: 1px solid lightgray
         thisLib.rectPointer.setAttribute("width",thisLib.naviWindowWidth);
         thisLib.rectPointer.setAttribute("height",thisLib.naviWindowHeight);
-        //thisLib.rectPointer.setAttribute("id","glycanviewer_rect");
+        thisLib.rectPointer.setAttribute("id","glycanviewer_rect");
 
         thisLib.div_navi.appendChild(thisLib.rectPointer);
 
@@ -795,6 +802,13 @@ var glycanviewer = {
 
 
         //this.network.fit(capture());
+
+
+        thisLib.naviNetwork.moveTo({
+            position: {x:currentPos.x, y:currentPos.y},
+            scale: currentScale * thisLib.para.display.naviOption.size,
+            offset: {x:0, y:0}
+        });
 
         function capture(){
             var networkCanvas = thisLib.div_network.getElementsByTagName("canvas")[0];
@@ -830,7 +844,7 @@ var glycanviewer = {
         function moveBack(){
             thisLib.network.moveTo(
                 {
-                    position: {x:currentPos.x, y:currentPos.y},
+                    position: {x:0, y:0},
                     scale: currentScale,
                     offset: {x:0, y:0}
                 },thisLib.whereAmI()
@@ -840,14 +854,41 @@ var glycanviewer = {
         }
     },
 
+    naviRefresh: function (){
+
+        var thisLib = this;
+        var data = thisLib.createNodeAndEdges();
+
+        thisLib.naviNetwork.setData(data);
+        var pos =thisLib.network.getPositions();
+
+        for (var id in pos){
+            var x = pos[id]["x"];
+            var y = pos[id]["y"];
+            data.nodes.update([{id: id, x: x, y: y}]);
+        }
+
+        thisLib.naviNetwork.moveTo({
+            position: {x:0, y:0},
+            scale: thisLib.para.display.naviOption.size,
+            offset: {x:0, y:0}
+        });
+
+    },
+
     whereAmI : function (){
         var thisLib = this;
+
+        function wrapper1(){
+            thisLib.naviRefresh()
+        }
 
         working();
         //thisLib.div_network.eventListeners = null;
         thisLib.div_network.addEventListener('click', working);
         thisLib.div_network.addEventListener('wheel', working);
         thisLib.div_network.addEventListener('touchend', working);
+        thisLib.network.on("dragEnd", wrapper1);
 
         function working(){
             var ctx = thisLib.rectPointer.getContext("2d");
