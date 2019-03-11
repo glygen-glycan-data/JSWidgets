@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="hgv.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.js"></script>
+    <script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.css" rel="stylesheet" type="text/css"/>
+    <!--- jQeury is not required --->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+
+<div id="uniqueID"
+     style="border-style: solid; border-color: lightgrey; width: calc(100%); height: 910px; right: 0;"></div>
+<br>
+
+<script>
+
+    var component_shorthand = {
+        nodes: [],
+        edges: []
+    };
+    var component_full = {
+        nodes: [],
+        edges:[],
+        properties: {
+            mw: 1849.33333,
+            topology: "GXXXXXMO",
+            composition: "",
+            baseComposition: null,
+            otherStuff: null,
+            title: "The title",
+            fakeRoot: {
+                // Similar to node
+            }
+        }
+    };
+
+    // For each node in nodes
+    // Level is calculated by JavaScript
+    var node_shorthand = {
+        id: ""
+    };
+    var node_full = {
+        id: "",
+        label: "",
+        shape: "image",
+        imageAlternativeURL: "",
+        hidden: false
+    };
+
+    // For each edge in edges
+    var edge_shorthand = {
+        from: "",
+        to: "",
+    };
+    var edge_full = {
+        from: "",
+        to: "",
+        type: "",
+        color: "",
+        hidden: ""
+    };
+
+
+    var component_shorthand_example = {
+        nodes: [
+            {id: "G00012MO"},
+            {id: "G00072MO"},
+            {id: "G82558IX"}
+            ],
+
+        edges: [
+            {from: "G82558IX", to: "G00012MO"},
+            {from: "G82558IX", to: "G00072MO"},
+        ]
+    }
+
+
+
+
+</script>
+</body>
+</html>
