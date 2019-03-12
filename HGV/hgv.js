@@ -806,7 +806,7 @@ var glycanviewer = {
 
         thisLib.naviNetwork.moveTo({
             position: {x:currentPos.x, y:currentPos.y},
-            scale: currentScale * thisLib.para.display.naviOption.size,
+            scale: currentScale * thisLib.para.display.naviOption.size * 0.95,
             offset: {x:0, y:0}
         });
 
@@ -870,7 +870,7 @@ var glycanviewer = {
 
         thisLib.naviNetwork.moveTo({
             position: {x:0, y:0},
-            scale: thisLib.para.display.naviOption.size,
+            scale: thisLib.para.display.naviOption.size * 0.95,
             offset: {x:0, y:0}
         });
 
