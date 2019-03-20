@@ -1,0 +1,64 @@
+svg {
+	font: 12px courier;
+	shape-rendering: crispEdges;
+	background-color: #f7f7f7;
+	border-radius: 10px;
+}
+
+.peptide{
+	font: sans-serif;
+}
+
+.backgroudGroup {
+	fill: none;
+}
+
+.axis path,
+.axis line {
+	fill: none;
+	stroke: steelblue;
+}
+
+
+
+.d3-tip{
+	line-height: 1;
+	padding: 10px; 
+	border-radius: 2px;
+}
+
+.d3-tip.peak-tip:after {
+	box-sizing: border-box;
+	display: inline;
+	font-size: 10px;
+	width: 100%;
+	line-height: 1;
+	content: "\25BC";
+	position: absolute;
+	text-align: center;
+}
+
+
+
+.d3-tip.peak-tip.n:after {
+  	margin: -1px 0 0 0;
+  	top: 100%;
+  	left: 0;
+}
+
+.d3-tip.peak-tip {
+	background: rgba(225, 225, 225, .8);
+	color: #f77;
+}
+
+.d3-tip.peak-tip:after {
+	color: rgba(63, 63, 63, 0.5);
+}
+
+
+
+.d3-tip.peptide-tip {
+	background: rgba(70, 130, 180, .9);
+	color: #f77;
+}
+
