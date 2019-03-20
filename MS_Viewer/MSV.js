@@ -1141,6 +1141,56 @@ var msmsv = function () {
         });
     }
 
+    function addTitles(container, titles, collapseAfter){
+        var containerEle = document.getElementsByClassName(container)[0];
+
+        for (var i in containerEle.childNodes){
+
+            if (containerEle.childNodes[2*i].tagName != "svg") {
+                continue
+            }
+            if (!(i in titles)){
+                continue
+            }
+
+            i = parseInt(i);
+
+            var titleEle = document.createElement("h2");
+            titleEle.innerHTML = titles[i];
+
+            titleEle.setAttribute("data-index",i);
+            titleEle.addEventListener("click", function () {
+                var index = this.getAttribute("data-index");
+                index = parseInt(index);
+                var displayBool = this.getAttribute("data-display");
+
+                if (displayBool == "true"){
+                    containerEle.childNodes[index*2+1].setAttribute("style","display: none");
+                    this.setAttribute("data-display","false");
+                }
+                else {
+                    containerEle.childNodes[index*2+1].setAttribute("style","display: inline");
+                    this.setAttribute("data-display","true");
+                }
+            });
+
+            if (collapseAfter != undefined){
+                if (i >= collapseAfter){
+                    titleEle.setAttribute("data-display","false");
+                    containerEle.childNodes[2*i].setAttribute("style","display: none")
+                }
+                else{
+                    titleEle.setAttribute("data-display","true");
+                    containerEle.childNodes[2*i].setAttribute("style","display: inline")
+                }
+            }
+
+            containerEle.insertBefore(titleEle, containerEle.childNodes[2*i]);
+        }
+
+
+    }
+
     return {
         spcls: spcls,
 
@@ -1164,7 +1214,9 @@ var msmsv = function () {
 
         clearSpectrum: clearSpectrum,
 
-        deleteSpectrum: deleteSpectrum
+        deleteSpectrum: deleteSpectrum,
+
+        addTitles: addTitles
 
     }
 

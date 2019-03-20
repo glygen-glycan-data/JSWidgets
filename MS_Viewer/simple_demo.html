@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/gh/glygen-glycan-data/JSWidgets/MS_Viewer/util.js"></script>
 </head>
 <body>
+<h1>Click on the title to collapse or extend the mass spectra.</h1>
 <div class="specpanel1"></div>
 <script type="text/javascript">
     var params=URI2Params(window.location);
@@ -20,16 +21,28 @@
         spectra: "https://cdn.jsdelivr.net/gh/glygen-glycan-data/JSWidgets/MS_Viewer/MS_24_UO1_HCD20_5X25_EThcd_nondplserum_neutry3.mgf",
         scan: "117,118,314,317,327"
     };
+    var scanNums = params["scan"].split(",");
     params["width"] = params["width"] || document.body.clientWidth;
     if ("spectra" in params) {
         var scans = params["scan"].split(",");
         for (var i=0, len=scans.length; i < len; i++) {
             var sc = scans[i];
             params["scan"] = sc;
-            console.log(params);
+            // console.log(params);
             msmsv.showUnlabelledSpectrum('specpanel1','spec'+sc,params);
         }
     }
+
+
+    var titles = [];
+    for (var i in scanNums){
+        var titleCont = "Mass Spectra for Scan Number: "+scanNums[i];
+        titles.push(titleCont);
+    }
+
+    msmsv.addTitles('specpanel1', titles, 3);
+
+
 </script>
 </body>
 </html>
