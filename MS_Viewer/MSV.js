@@ -1141,7 +1141,7 @@ var msmsv = function () {
         });
     }
 
-    function addTitles(container, titles, collapseAfter){
+    function addTitles(container, titles, collapseAfter, titleTag){
         var containerEle = document.getElementsByClassName(container)[0];
 
         for (var i in containerEle.childNodes){
@@ -1155,7 +1155,10 @@ var msmsv = function () {
 
             i = parseInt(i);
 
-            var titleEle = document.createElement("h2");
+            if (titleTag == undefined){
+                titleTag = "h2";
+            }
+            var titleEle = document.createElement(titleTag);
             titleEle.innerHTML = titles[i];
 
             titleEle.setAttribute("data-index",i);
