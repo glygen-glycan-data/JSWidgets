@@ -16,6 +16,13 @@
 
 <script>
 
+    /*
+    * 1. Only put relational information in the nodes and edges
+    * 2. Change the notion of "fake" to "pseudo"
+    * 3. Move node and edge properties to component.properties.
+    * 4. Use a big array to store multiple components
+    * */
+
     var component_shorthand = {
         nodes: [],
         edges: []
@@ -25,23 +32,24 @@
         edges:[],
         properties: {
             mw: 1849.33333,
-            topology: "GXXXXXMO",
-            composition: "",
-            baseComposition: null,
+            topology: [],
+            composition: [],
+            baseComposition: [],
             otherStuff: null,
             title: "The title",
-            fakeRoot: {
-                // Similar to node
-            }
+            pseudoNodes: [],
+            pseudoEdges: [],
+            // Put nodes and edges properties for displaying the subsumption here
+            nodes: [],
+            edges: []
         }
     };
 
     // For each node in nodes
-    // Level is calculated by JavaScript
-    var node_shorthand = {
+    var node_essential = {
         id: ""
     };
-    var node_full = {
+    var node_properties = {
         id: "",
         label: "",
         shape: "image",
@@ -51,13 +59,13 @@
 
     // For each edge in edges
     var edge_shorthand = {
+        id: "",
         from: "",
         to: "",
+        type: ""
     };
-    var edge_full = {
-        from: "",
-        to: "",
-        type: "",
+    var edge_properties = {
+        id: "",
         color: "",
         hidden: ""
     };
@@ -72,7 +80,7 @@
 
         edges: [
             {from: "G82558IX", to: "G00012MO"},
-            {from: "G82558IX", to: "G00072MO"},
+            {from: "G82558IX", to: "G00072MO"}
         ]
     }
 
