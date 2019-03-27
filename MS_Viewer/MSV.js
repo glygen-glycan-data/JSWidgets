@@ -1155,7 +1155,9 @@ var msmsv = function () {
         var containerEle = document.getElementsByClassName(container)[0];
 
         for (var i in containerEle.childNodes){
-
+            if (!containerEle.childNodes[2*i]){
+                continue
+            }
             if (containerEle.childNodes[2*i].tagName != "svg") {
                 continue
             }
