@@ -1,3 +1,4 @@
+
 "use strict";
 
 var msmsv = function () {
@@ -101,7 +102,7 @@ var msmsv = function () {
         var resizeGroup = selectGroup.append("g")
             .attr("class", "resize");
 
-        var annotations = params["annotations"]
+        var annotations = params["annotations"];
         var annotation_data;
 
         if (annotations) {
@@ -114,21 +115,21 @@ var msmsv = function () {
         var format = params["format"]
         var scan = params["scan"]
 
-	if (format == "json" && !/\.json$/i.test(url)) {
-	  spectra = spectra + "/" + scan + ".json";
+        if (format == "json" && !/\.json$/i.test(spectra)) {
+            spectra = spectra + "/" + scan + ".json";
         }
 
         getSpectrum(spectra, format, scan, function(spectrum) {
 
-	    var peaks;
-	    if (spectrum.hasOwnProperty('peaks')) {
-	      peaks = spectrum.peaks;
-	    } else {
-              peaks = [];
-              for (var i = 0, len = spectrum.mz.length; i < len; i++) {
-                peaks.push({mz: spectrum.mz[i], int: spectrum.it[i]});
-              };
-	    }
+            var peaks;
+            if (spectrum.hasOwnProperty('peaks')) {
+                peaks = spectrum.peaks;
+            } else {
+                peaks = [];
+                for (var i = 0, len = spectrum.mz.length; i < len; i++) {
+                    peaks.push({mz: spectrum.mz[i], int: spectrum.it[i]});
+                };
+            }
 
             var maxPeaksInt = d3.max(peaks, function (d){ return d.int; });
             var maxPeaksMZ = d3.max(peaks, function (d){ return d.mz; });
@@ -456,7 +457,7 @@ var msmsv = function () {
         var containerWidth = canvasWidth - (margin.left + margin.right);
         var containerHeight = canvasHeight - (margin.top + margin.bottom);
 
-        var peptideSpace = 40; 			 <!-- dev options
+        var peptideSpace = 40; 			// <!-- dev options
         var peptidePadding = 40;
         var peptidePixelSize = 40;
 
@@ -936,9 +937,9 @@ var msmsv = function () {
 
             cCallbacks[container][tag] = (function (a,b) {setDomain(a,b); resizeEnded(false,false);});
 
-        <!-- peptide symbol rendering
+        //<!-- peptide symbol rendering
 
-            function drawSymbole(fragment, i){	<!-- TODO REDO
+            function drawSymbole(fragment, i){//	<!-- TODO REDO
 
                 if(fragment.type == "b-ion"){
                     var startX = peptideSpace * (fragment.subscript - 1) + peptidePadding;
