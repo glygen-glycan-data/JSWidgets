@@ -12,18 +12,47 @@ function getSpectrum(url, format, scan, callback) {
     }
     else {
         cache[url] = undefined;
-	if ((format && format.lower() == "mgf") || /\.mgf$/i.test(url)) {
+	if ((format && format.lower == "mgf") || /\.mgf$/i.test(url)) {
 	    d3.text(url, function(data) {
 		cache[url] = mgfparser(data);
-		// console.log(scan);
 		callback(cache[url][scan]);
 		for (var i=0, len=callbacks.length; i < len; i++) {
-		    // console.log(callbacks[i][0]);
 		    callbacks[i][1](cache[url][callbacks[i][0]]);
                 }
 	    });
-	}
+	} else if ((format && format.lower == "json") || /\.json$/i.test(url)) {
+	    d3.text(url, function(data) {
+		cache[url] = jsonparser(data);
+		callback(cache[url][scan]);
+		for (var i=0, len=callbacks.length; i < len; i++) {
+		    callbacks[i][1](cache[url][callbacks[i][0]]);
+                }
+	    });
+	} 
     }
+}
+
+function jsonparser(data) {
+  var obj = JSON.parse(data);
+  var spectra = {};
+  if (obj.hasOwnProperty('spectra')) {
+    obj["spectra"].forEach(function(s) {
+      var spec = jsonspectrum(s);
+      spectra[spec.scan] = spec;
+    });
+  } else {
+    var spec = jsonspectrum(obj);
+    spectra[spec.scan] = spec;
+  }
+  return spectra;
+}
+
+function jsonspectrum(s) {
+  var spec = {};
+  for (var k in s) {
+    spec[k] = s[k];
+  }
+  return spec;
 }
 
 function mgfparser(data) {

@@ -114,12 +114,21 @@ var msmsv = function () {
         var format = params["format"]
         var scan = params["scan"]
 
+	if (format == "json" && !/\.json$/i.test(url)) {
+	  spectra = spectra + "/" + scan + ".json";
+        }
+
         getSpectrum(spectra, format, scan, function(spectrum) {
 
-            var peaks = [];
-            for (var i = 0, len = spectrum.mz.length; i < len; i++) {
+	    var peaks;
+	    if (spectrum.hasOwnProperty('peaks')) {
+	      peaks = spectrum.peaks;
+	    } else {
+              peaks = [];
+              for (var i = 0, len = spectrum.mz.length; i < len; i++) {
                 peaks.push({mz: spectrum.mz[i], int: spectrum.it[i]});
-            }
+              };
+	    }
 
             var maxPeaksInt = d3.max(peaks, function (d){ return d.int; });
             var maxPeaksMZ = d3.max(peaks, function (d){ return d.mz; });
