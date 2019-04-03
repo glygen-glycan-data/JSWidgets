@@ -64,7 +64,7 @@ var msmsv = function () {
         var transitionType = "bounce";
 
         var baseHeightPercent = params["intensity_threshold"] || 0.05;
-	var tolerance = params["tolerance"] || 0.05;
+	var tolerance = params["tolerance"] || 0.1;
         var colorTheme = params["fragment_colors"] || {b: "steelBlue", y: "tomato", 
                                                        c: "steelBlue", z: "tomato", 
                                                        B: "steelBlue", Y: "tomato", 
