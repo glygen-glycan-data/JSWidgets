@@ -38,7 +38,7 @@ var msmsv = function () {
         }
     }
 
-    function showUnlabelledSpectrum(container, tag, params) {
+    function showLabelledSpectrum(container, tag, params) {
 
         if (!(container in cTags) || cTags[container].indexOf(tag) < 0) {
             // console.log("append spectrum "+container+" "+tag);
@@ -95,8 +95,14 @@ var msmsv = function () {
         var fragmentGroup = elementGroup.append("g")
             .attr("class", "fragments");
 
+        var fragmentOtherPeakGroup = fragmentGroup.append("g")
+            .attr("class", "otherPeakGroup");
+
         var fragmentLabelGroup = fragmentGroup.append("g")
             .attr("class", "labelGroup");
+
+        var fragmentLineGroup = fragmentGroup.append("g")
+            .attr("class", "LineGroup");
 
         var fragmentSelectedGroup = fragmentGroup.append("g")
             .attr("class", "fragementSelectedGroup");
@@ -111,9 +117,9 @@ var msmsv = function () {
         var resizeGroup = selectGroup.append("g")
             .attr("class", "resize");
 
-        var spectra = params["spectra"]
-        var format = params["format"]
-        var scan = params["scan"]
+        var spectra = params["spectra"];
+        var format = params["format"];
+        var scan = params["scan"];
 
         if (format == "json" && !/\.json$/i.test(spectra)) {
             spectra = spectra + "/" + scan + ".json";
@@ -141,22 +147,104 @@ var msmsv = function () {
                     for (var i = 0, len = spectrum.mz.length; i < len; i++) {
                         peaks.push({mz: spectrum.mz[i], int: spectrum.it[i]});
                     }
-                    ;
                 }
 
                 var fragments = [];
                 if (annotation_data != null) {
                     var fragMode = spectrum["fragmentationMode"] || "CID";
-                    var fragTypes = annotation_data["fragmode2fragtype"][fragMode]
+                    var fragTypes = annotation_data["fragmode2fragtype"][fragMode];
                     for (var i = 0; i < fragTypes.length; i++) {
                         var frags = annotation_data["byfragtype"][fragTypes.charAt(i)];
                         fragments = fragments.concat(frags);
                     }
-                    ;
                 }
-                ;
+
                 var newFragments = [];
-                var usedPeak = {}
+                var colorThePeak = [];
+                var newLinesForEachMatedCluster = [];
+                var usedPeak = {};
+
+                var peakClusters = peakClusterRecognition();
+
+                function peakClusterRecognition(){
+                    var peakCluster = {};
+                    /*
+                    var peaks = [
+                        {int: 1000, mz: 1000.},
+                        {int: 1000, mz: 1000.33},
+                        {int: 1000, mz: 1000.66},
+                        {int: 1000, mz: 1000.99},
+                        {int: 1000, mz: 1001.33},
+                        {int: 1000, mz: 1001.66},
+                        {int: 2000, mz: 1001.65}
+                    ];
+                    */
+
+                    var peakscopy = JSON.parse(JSON.stringify(peaks)).sort(function(a, b){
+                        return a.mz - b.mz
+                    });
+
+                    // console.log("Version 1");
+                    for (var potentialChargeStatus of [1,2,3,4,5,6]) {
+                        // console.log(potentialChargeStatus);
+                        peakCluster[potentialChargeStatus] = [];
+                        for (var peak1 of peakscopy){
+
+                            var perCluster = {0:[peak1]};
+
+                            for (var peak2 of peakscopy){
+                                if (peak1.mz >= peak2.mz){
+                                    continue
+                                }
+                                if (peak2.mz - peak1.mz - 0.1 > (1/potentialChargeStatus)*(Math.round(potentialChargeStatus * peak1.mz / 1000) + 3)){
+                                    continue
+                                }
+
+                                var potentialNthPeakInsideCluster = (peak2.mz - peak1.mz) * potentialChargeStatus;
+                                if (Math.abs(potentialNthPeakInsideCluster - Math.round(potentialNthPeakInsideCluster)) < 0.04 * potentialChargeStatus){
+                                    potentialNthPeakInsideCluster = Math.round(potentialNthPeakInsideCluster);
+                                }
+                                else{
+                                    continue
+                                }
+
+                                if (!(potentialNthPeakInsideCluster in perCluster)){
+                                    perCluster[potentialNthPeakInsideCluster] = []
+                                }
+                                perCluster[potentialNthPeakInsideCluster].push(peak2);
+
+                            }
+
+                            // Check the legitimacy of the potential cluster
+                            // Only keep the perfect cluster
+                            var clusterVerfied = true;
+                            if (Object.keys(perCluster).length == 1){
+                                continue
+                            }
+                            if (parseInt(Object.keys(perCluster)[Object.keys(perCluster).length-1]) != Object.keys(perCluster).length-1){
+                                continue
+                            }
+                            for (var peakIndexInsideCluster in perCluster){
+                                if (perCluster[peakIndexInsideCluster].length > 1 ){
+                                    perCluster[peakIndexInsideCluster].sort(function (a, b) {
+                                        return b.int - a.int
+                                    });
+                                    perCluster[peakIndexInsideCluster] = [perCluster[peakIndexInsideCluster][0]]
+                                }
+                            }
+
+                            if (clusterVerfied){
+                                // console.log(perCluster);
+                                peakCluster[potentialChargeStatus].push(perCluster)
+                            }
+                        }
+                    }
+
+
+
+
+                    return peakCluster
+                }
 
                 var maxPeaksInt = d3.max(peaks, function (d) {
                     return d.int;
@@ -172,6 +260,10 @@ var msmsv = function () {
                     }
                 });
 
+                // Match fragment with smaller molecular weight first
+                fragments.sort(function(a, b){
+                    return a.mz - b.mz
+                });
                 fragments.forEach(appendFragments);
 
                 var domain = {min: 0, max: containerWidth};
@@ -275,6 +367,7 @@ var msmsv = function () {
                         hideToolTip("peak-tip");
                     });
 
+
                 var fragmentElements = fragmentGroup.selectAll("rect")
                     .data(newFragments)
                     .enter()
@@ -299,13 +392,33 @@ var msmsv = function () {
                         hideToolTip("peak-tip");
                     });
 
+
+                var fragmentElementsIntheSameCluster = fragmentOtherPeakGroup.selectAll("rect")
+                    .data(colorThePeak)
+                    .enter()
+                    .append("g")
+                    .attr("class", function (d, i) {
+                        return "fragment " + i;
+                    })
+                    .append("rect")
+                    .attr("x", function (d) {
+                        return widthScale(d.mz);
+                    })
+                    .attr("y", containerHeight)
+                    .attr("width", 2)
+                    .attr("height", 0)
+                    .attr("fill", function (d) {
+                        return d.color;
+                    });
+
+
                 var fragmentLabels = fragmentLabelGroup.selectAll("text")
                     .data(newFragments)
                     .enter()
                     .append("g")
                     .attr("class", "label")
                     .attr("transform", function (d) {
-                        return "translate(" + [widthScale(d.mz), containerHeight - heightScale(d.int)] + ")";
+                        return "translate(" + [widthScale(d.mz), containerHeight - heightScale(d.labelInt)] + ")";
                     })
                     .append("text")
                     .attr("y", function (d) {
@@ -345,12 +458,54 @@ var msmsv = function () {
                         return d.color;
                     });
 
+                fragmentElementsIntheSameCluster.transition()
+                    .duration(transitionDuration)
+                    .delay(transitionDelay)
+                    .ease(transitionType)
+                    .attr("y", function (d) {
+                        return containerHeight - heightScale(d.int);
+                    })
+                    .attr("height", function (d) {
+                        return heightScale(d.int);
+                    })
+                    .attr("fill", function (d) {
+                        return d.color;
+                    });
+
                 fragmentLabels.transition()
                     .duration(transitionDuration)
                     .delay(transitionDelay)
                     .ease(transitionType)
                     .attr("y", -5)
                     .style("opacity", "1");
+
+
+                var newLine = d3.svg.line()
+                    .x(function (d) {
+                        return widthScale(d.mz)
+                    })
+                    .y(function (d) {
+                        return containerHeight - heightScale(d.int)
+                    })
+                    .interpolate("linear");
+
+
+                var fragmentLineElements = fragmentLineGroup.selectAll("path")
+                    .data(newLinesForEachMatedCluster)
+                    .enter()
+                    .append("g")
+                    .append("path")
+                    .attr('d', newLine)
+                    .attr("stroke", "black")
+                    .attr("fill", "None")
+                    .attr("stroke-width", 2);
+
+                fragmentLineElements.transition()
+                    .duration(transitionDuration)
+                    .delay(transitionDelay)
+                    .ease(transitionType)
+                    .style("opacity", "0.5");
+
 
                 containerGroup.call(peakTip);
                 selectGroup.call(drag);
@@ -361,6 +516,17 @@ var msmsv = function () {
                     resetDomain();
                     resizeEnded(true, true);
                 }, transitionDuration + transitionDelay);
+
+                // Disable the rectangles or the path
+                if (false){
+                    elementGroup.selectAll("path")
+                        .style("display", "None");
+                }
+
+                if (false){
+                    elementGroup.selectAll("rect").style("display", "None");
+                    //.style("opacity", "0");
+                }
 
                 var originalX;
                 var originalY;
@@ -480,6 +646,15 @@ var msmsv = function () {
                             tooltipTransition("*", 0, 500, 0);
                         });
 
+                    elementGroup.transition()
+                        .duration(zoomDuration)
+                        .attr("transform", "translate(" + [-domain.min * scale, 0] + ")scale(" + [scale, 1] + ")")
+                        .selectAll("path")
+                        .attr("stroke-width", 2 / scale)
+                        .each("end", function () {
+                            tooltipTransition("*", 0, 500, 0);
+                        });
+
                     fragmentLabelGroup.selectAll("text").attr("transform", "scale(" + [1 / scale, 1] + ")");
 
                     if (cascade) {
@@ -526,7 +701,7 @@ var msmsv = function () {
 
                         usedPeak[bestPeak.mz] = true;
 
-                        fragment.delta = (bestPeak.mz - fragment.mz)
+                        fragment.delta = (bestPeak.mz - fragment.mz);
                         // for positioning...
                         fragment.mz = bestPeak.mz;
                         fragment.int = bestPeak.int;
@@ -535,6 +710,44 @@ var msmsv = function () {
                             fragment.color = colorTheme[fragment.type];
                         }
 
+                        // Label the cluster
+                        // console.log(peakClusters);
+                        // console.log(fragment);
+
+
+                        var hasFoundCluster = false;
+                        var correspondingCluster;
+                        var maxIntForLabel = 0;
+                        for (var cluster of peakClusters[fragment.z]){
+                            if (cluster[0][0].mz == bestPeak.mz){
+                                correspondingCluster = cluster;
+                                hasFoundCluster = true;
+                                break;
+                            }
+
+                        }
+
+                        if (hasFoundCluster){
+                            var points = [];
+                            for (var p in correspondingCluster){
+                                var pp = correspondingCluster[p][0];
+                                usedPeak[pp.mz] = true;
+                                //console.log(pp);
+                                pp = JSON.parse(JSON.stringify(pp));
+                                points.push(JSON.parse(JSON.stringify(pp)));
+                                pp.color = fragment.color;
+                                if (pp.int > maxIntForLabel){
+                                    maxIntForLabel = pp.int;
+                                }
+                                if ( p != 0 ) {
+                                    colorThePeak.push(pp);
+                                }
+                            }
+                            newLinesForEachMatedCluster.push(points);
+
+                        }
+
+                        fragment.labelInt = Math.max(fragment.int, maxIntForLabel);
                         newFragments.push(fragment);
 
                     }
@@ -584,7 +797,7 @@ var msmsv = function () {
 
 
             });
-        };
+        }
     }
 
     var superScript = "⁰¹²³⁴⁵⁶⁷⁸⁹";
@@ -739,7 +952,7 @@ var msmsv = function () {
 
         appendSpectrum: appendSpectrum,
 
-        showUnlabelledSpectrum: showUnlabelledSpectrum,
+        showLabelledSpectrum: showLabelledSpectrum,
 
         getSuperscript: getSuperscript,
 
