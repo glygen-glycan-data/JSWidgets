@@ -518,7 +518,7 @@ var msmsv = function () {
                 }, transitionDuration + transitionDelay);
 
                 // Disable the rectangles or the path
-                if (false){
+                if (true){
                     elementGroup.selectAll("path")
                         .style("display", "None");
                 }
