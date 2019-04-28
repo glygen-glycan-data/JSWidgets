@@ -1,6 +1,6 @@
 "use strict";
 
-var msmsv = function () {
+var msmsv = function() {
 
 
     function spcls(container, tag) {
@@ -101,8 +101,9 @@ var msmsv = function () {
         var fragmentLabelGroup = fragmentGroup.append("g")
             .attr("class", "labelGroup");
 
-        var fragmentLineGroup = fragmentGroup.append("g")
-            .attr("class", "LineGroup");
+        // fragmentLineGroup
+        var chromatographLine = fragmentGroup.append("g")
+            .attr("class", "lineGroup");
 
         var fragmentSelectedGroup = fragmentGroup.append("g")
             .attr("class", "fragementSelectedGroup");
@@ -120,6 +121,7 @@ var msmsv = function () {
         var spectra = params["spectra"];
         var format = params["format"];
         var scan = params["scan"];
+        var graphType = params["graphtype"]||"ms2";
 
         if (format == "json" && !/\.json$/i.test(spectra)) {
             spectra = spectra + "/" + scan + ".json";
@@ -140,12 +142,19 @@ var msmsv = function () {
             getSpectrum(spectra, format, scan, function (spectrum) {
 
                 var peaks;
-                if (spectrum.hasOwnProperty('peaks')) {
+                if (graphType == "chromatogram") {
+                    peaks = [];
+                    for (var i in spectrum.peaks) {
+                        i = parseInt(i);
+                        peaks.push({mz: spectrum.peaks[i].mz, int: spectrum.peaks[i].int});
+                    }
                     peaks = spectrum.peaks;
-                } else {
+                } else if(spectrum.hasOwnProperty('peaks')){
+                    peaks = spectrum.peaks;
+                }else{
                     peaks = [];
                     for (var i = 0, len = spectrum.mz.length; i < len; i++) {
-                        peaks.push({mz: spectrum.mz[i], int: spectrum.it[i]});
+                        peaks.push({mz: spectrum.mz[i], int: spectrum.int[i]});
                     }
                 }
 
@@ -184,7 +193,7 @@ var msmsv = function () {
                         return a.mz - b.mz
                     });
 
-                    // console.log("Version 1");
+
                     for (var potentialChargeStatus of [1,2,3,4,5,6]) {
                         // console.log(potentialChargeStatus);
                         peakCluster[potentialChargeStatus] = [];
@@ -240,9 +249,6 @@ var msmsv = function () {
                         }
                     }
 
-
-
-
                     return peakCluster
                 }
 
@@ -259,6 +265,49 @@ var msmsv = function () {
                         cMaxMZ[container]['_max_'] = cMaxMZ[container][item];
                     }
                 });
+
+                // Get rid off continuous peak with 0 intensity
+                if (graphType == "chromatogram"){
+                    peaks.sort(function(a, b){
+                        return a.mz - b.mz
+                    });
+                    var peakTemp = [];
+                    var intZeroPeakIndexes = [];
+                    for (var peaki in peaks){
+                        if (peaks[peaki].int == 0){
+                            intZeroPeakIndexes.push(peaki);
+                        }else{
+                            peakTemp.push(peaks[peaki])
+                        }
+                    }
+                    for (var i in intZeroPeakIndexes){
+                        var peak = peaks[intZeroPeakIndexes[i]];
+                        if (i>0 && i<intZeroPeakIndexes.length-1){
+                            i = parseInt(i);
+                            var lastx = parseInt(intZeroPeakIndexes[i-1]);
+                            var nextx = parseInt(intZeroPeakIndexes[i+1]);
+                            var thisx = parseInt(intZeroPeakIndexes[i]);
+                            if (thisx-1 == lastx && thisx+1 == nextx){
+                                continue
+                            }else if(thisx+1 == nextx){
+                                // Start point
+                                peakTemp.push(peak)
+                            }else if(thisx-1 == lastx){
+                                // End point
+                                peakTemp.push(peak)
+                            }
+
+                        }
+                        else{
+                            peakTemp.push(peak)
+                        }
+                        //console.log(intZeroPeakIndexes[i]);
+                    }
+                    peakTemp.sort(function(a, b){
+                        return a.mz - b.mz
+                    });
+                    peaks = peakTemp;
+                }
 
                 // Match fragment with smaller molecular weight first
                 fragments.sort(function(a, b){
@@ -490,8 +539,8 @@ var msmsv = function () {
                     .interpolate("linear");
 
 
-                var fragmentLineElements = fragmentLineGroup.selectAll("path")
-                    .data(newLinesForEachMatedCluster)
+                var chromatographLineElements = chromatographLine.selectAll("path")
+                    .data([peaks])
                     .enter()
                     .append("g")
                     .append("path")
@@ -500,7 +549,7 @@ var msmsv = function () {
                     .attr("fill", "None")
                     .attr("stroke-width", 2);
 
-                fragmentLineElements.transition()
+                chromatographLineElements.transition()
                     .duration(transitionDuration)
                     .delay(transitionDelay)
                     .ease(transitionType)
@@ -518,14 +567,13 @@ var msmsv = function () {
                 }, transitionDuration + transitionDelay);
 
                 // Disable the rectangles or the path
-                if (true){
-                    elementGroup.selectAll("path")
-                        .style("display", "None");
+                if (graphType == "chromatogram") {
+                    elementGroup.selectAll("rect").remove()
+                        //style("display", "None");
                 }
-
-                if (false){
-                    elementGroup.selectAll("rect").style("display", "None");
-                    //.style("opacity", "0");
+                else{
+                    elementGroup.selectAll("path").remove()
+                        //.style("display", "None");
                 }
 
                 var originalX;
@@ -608,7 +656,7 @@ var msmsv = function () {
                             .attr("x", lastMouseX);
                         newDomain.min = (lastMouseX / scale) + domain.min;
                         newDomain.max = (originalX / scale) + domain.min;
-                    } else {
+                    } else if (resizeWidth > 0){
                         newDomain.min = (originalX / scale) + domain.min;
                         newDomain.max = (lastMouseX / scale) + domain.min;
                     }
@@ -728,13 +776,11 @@ var msmsv = function () {
                         }
 
                         if (hasFoundCluster){
-                            var points = [];
                             for (var p in correspondingCluster){
                                 var pp = correspondingCluster[p][0];
                                 usedPeak[pp.mz] = true;
                                 //console.log(pp);
                                 pp = JSON.parse(JSON.stringify(pp));
-                                points.push(JSON.parse(JSON.stringify(pp)));
                                 pp.color = fragment.color;
                                 if (pp.int > maxIntForLabel){
                                     maxIntForLabel = pp.int;
@@ -743,7 +789,6 @@ var msmsv = function () {
                                     colorThePeak.push(pp);
                                 }
                             }
-                            newLinesForEachMatedCluster.push(points);
 
                         }
 
