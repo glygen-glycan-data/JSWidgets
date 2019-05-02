@@ -69,7 +69,8 @@ var msmsv = function() {
             c: "steelBlue", z: "tomato",
             B: "steelBlue", Y: "tomato",
             M: "black",
-            other: "grey"
+            other: "grey",
+            auc: "lightgrey"
         };
 
         var group = canvas.append("g")
@@ -538,7 +539,7 @@ var msmsv = function() {
                     })
                     .interpolate("linear");
 
-
+                var renderOption =  ["auto","optimizeSpeed","crispEdges","geometricPrecision",""][3];
                 var chromatographLineElements = chromatographLine.selectAll("path")
                     .data([peaks])
                     .enter()
@@ -546,14 +547,17 @@ var msmsv = function() {
                     .append("path")
                     .attr('d', newLine)
                     .attr("stroke", "black")
-                    .attr("fill", "None")
+                    .attr("fill", colorTheme.auc)
+                    .attr("fill-opacity", "0.7")
+                    .attr("shape-rendering", renderOption)
+                    .attr("vector-effect", "")
                     .attr("stroke-width", 2);
 
                 chromatographLineElements.transition()
                     .duration(transitionDuration)
                     .delay(transitionDelay)
                     .ease(transitionType)
-                    .style("opacity", "0.5");
+                    .style("opacity", "1");
 
 
                 containerGroup.call(peakTip);
