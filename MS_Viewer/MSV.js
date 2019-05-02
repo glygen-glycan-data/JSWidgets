@@ -539,7 +539,6 @@ var msmsv = function() {
                     })
                     .interpolate("linear");
 
-                var renderOption =  ["auto","optimizeSpeed","crispEdges","geometricPrecision",""][3];
                 var chromatographLineElements = chromatographLine.selectAll("path")
                     .data([peaks])
                     .enter()
@@ -549,9 +548,9 @@ var msmsv = function() {
                     .attr("stroke", "black")
                     .attr("fill", colorTheme.auc)
                     .attr("fill-opacity", "0.7")
-                    .attr("shape-rendering", renderOption)
-                    .attr("vector-effect", "")
-                    .attr("stroke-width", 2);
+                    .attr("shape-rendering", "geometricPrecision")
+                    .attr("vector-effect", "non-scaling-stroke")
+                    .attr("stroke-width", 1);
 
                 chromatographLineElements.transition()
                     .duration(transitionDuration)
@@ -702,7 +701,6 @@ var msmsv = function() {
                         .duration(zoomDuration)
                         .attr("transform", "translate(" + [-domain.min * scale, 0] + ")scale(" + [scale, 1] + ")")
                         .selectAll("path")
-                        .attr("stroke-width", 2 / scale)
                         .each("end", function () {
                             tooltipTransition("*", 0, 500, 0);
                         });
