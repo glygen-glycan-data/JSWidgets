@@ -149,7 +149,7 @@ var msmsv = function() {
                         i = parseInt(i);
                         peaks.push({mz: spectrum.peaks[i].rt, int: spectrum.peaks[i].int});
                     }
-                    peaks = spectrum.peaks;
+                    // peaks = spectrum.peaks;
                 } else if(spectrum.hasOwnProperty('peaks')){
                     peaks = spectrum.peaks;
                 }else{
