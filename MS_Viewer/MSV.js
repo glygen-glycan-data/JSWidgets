@@ -147,7 +147,7 @@ var msmsv = function() {
                     peaks = [];
                     for (var i in spectrum.peaks) {
                         i = parseInt(i);
-                        peaks.push({mz: spectrum.peaks[i].mz, int: spectrum.peaks[i].int});
+                        peaks.push({mz: spectrum.peaks[i].rt, int: spectrum.peaks[i].int});
                     }
                     peaks = spectrum.peaks;
                 } else if(spectrum.hasOwnProperty('peaks')){
