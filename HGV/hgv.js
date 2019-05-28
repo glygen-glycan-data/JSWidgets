@@ -879,8 +879,8 @@ var glycanviewer = {
     whereAmI : function (){
         var thisLib = this;
 
-        function wrapper1(){
-            if (x.nodes){
+        function wrapper1(e){
+            if ( e.nodes.length>0 ){
                 thisLib.naviRefresh()
             }
         }
