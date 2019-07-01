@@ -22,7 +22,14 @@ function getSpectrum(url, format, scan, callback) {
         } else if ((format && format.toLowerCase() == "json") || /\.json$/i.test(url)) {
             d3.text(url, function (data) {
                 cache[url] = jsonparser(data);
-                callback(cache[url][scan]);
+                
+                if (Object.keys(cache[url]).length == 1){
+                    callback(cache[url][Object.keys(cache[url])[0]]);
+                }
+                else{
+                    callback(cache[url][scan]);
+                }
+                
                 for (var i = 0, len = callbacks.length; i < len; i++) {
                     callbacks[i][1](cache[url][callbacks[i][0]]);
                 }
