@@ -272,6 +272,11 @@ var msmsv = function() {
                     peaks.sort(function(a, b){
                         return a.mz - b.mz
                     });
+                    var peak0 = [{"mz": peaks[0].mz,"int": 0}];
+                    var peaklast = {"mz": peaks[peaks.length-1].mz,"int": 0};
+                    peaks = peak0.concat(peaks);
+                    peaks.push(peaklast);
+
                     var peakTemp = [];
                     var intZeroPeakIndexes = [];
                     for (var peaki in peaks){
