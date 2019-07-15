@@ -657,7 +657,7 @@ var msmsv = function() {
 
                     resizeGroup.selectAll("rect")
                         .attr("width", Math.abs(resizeWidth));
-                    // .attr("height", Math.abs(resizeHeight));
+                    //  .attr("height", Math.abs(resizeHeight));
 
                     if (resizeWidth < 0) {
                         resizeGroup.selectAll("rect")
@@ -690,6 +690,27 @@ var msmsv = function() {
 
                     scale = (maxPeaksMZ) / (clickScale(newDomain.max) - clickScale(newDomain.min));
 
+                    var minMZinViewField = clickScale(newDomain.min);
+                    var maxMZinViewField = clickScale(newDomain.max);
+                    var maxIntinViewField = 1;
+
+                    for (var dot of peaks){
+                        if (dot.mz >= minMZinViewField && dot.mz <= maxMZinViewField ){
+                            if (dot.int > maxIntinViewField){
+                                maxIntinViewField = dot.int;
+                            }
+                        }
+                    }
+
+
+                    var scale2 = maxPeaksInt / maxIntinViewField;
+                    var translateoffsetforheight = -containerHeight * (scale2-1);
+
+
+                    yAxisScale.domain([(maxPeaksInt + 20 * maxPeaksInt / containerHeight) / scale2, 0]).range([0, containerHeight]);
+                    yAxisGroup.transition().duration(zoomDuration).call(yAxis);
+
+
                     domain.min = newDomain.min;
                     domain.max = newDomain.max;
 
@@ -704,13 +725,13 @@ var msmsv = function() {
 
                     elementGroup.transition()
                         .duration(zoomDuration)
-                        .attr("transform", "translate(" + [-domain.min * scale, 0] + ")scale(" + [scale, 1] + ")")
+                        .attr("transform", "translate(" + [-domain.min * scale, translateoffsetforheight] + ")scale(" + [scale, scale2] + ")")
                         .selectAll("path")
                         .each("end", function () {
                             tooltipTransition("*", 0, 500, 0);
                         });
 
-                    fragmentLabelGroup.selectAll("text").attr("transform", "scale(" + [1 / scale, 1] + ")");
+                    fragmentLabelGroup.selectAll("text").attr("transform", "scale(" + [1 / scale, 1/scale2] + ")");
 
                     if (cascade) {
                         cTags[container].forEach(function (item, index, array) {
