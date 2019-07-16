@@ -702,10 +702,12 @@ var msmsv = function() {
                         }
                     }
 
-
-                    var scale2 = maxPeaksInt / maxIntinViewField;
-                    var translateoffsetforheight = -containerHeight * (scale2-1);
-
+                    var scale2 = 1;
+                    var translateoffsetforheight = 0;
+                    if (params["zoomHeight"]){
+                        scale2 = maxPeaksInt / maxIntinViewField;
+                        translateoffsetforheight = -containerHeight * (scale2-1);
+                    }
 
                     yAxisScale.domain([(maxPeaksInt + 20 * maxPeaksInt / containerHeight) / scale2, 0]).range([0, containerHeight]);
                     yAxisGroup.transition().duration(zoomDuration).call(yAxis);
