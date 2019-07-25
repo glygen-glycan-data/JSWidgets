@@ -178,17 +178,6 @@ var msmsv = function() {
 
                 function peakClusterRecognition(){
                     var peakCluster = {};
-                    /*
-                    var peaks = [
-                        {int: 1000, mz: 1000.},
-                        {int: 1000, mz: 1000.33},
-                        {int: 1000, mz: 1000.66},
-                        {int: 1000, mz: 1000.99},
-                        {int: 1000, mz: 1001.33},
-                        {int: 1000, mz: 1001.66},
-                        {int: 2000, mz: 1001.65}
-                    ];
-                    */
 
                     var peakscopy = JSON.parse(JSON.stringify(peaks)).sort(function(a, b){
                         return a.mz - b.mz
@@ -315,11 +304,37 @@ var msmsv = function() {
                     peaks = peakTemp;
                 }
 
-                // Match fragment with smaller molecular weight first
+                // Order of priority: mass, fragment type,
+
+                var fragmentTypePriority = "YBMybcz";
                 fragments.sort(function(a, b){
+
+                    if (Math.abs(a.mz - b.mz) > tolerance*2){
+                        return a.mz - b.mz
+                    }
+
+                    if (a.type !== b.type){
+                        var i = fragmentTypePriority.indexOf(a.type);
+                        var j = fragmentTypePriority.indexOf(b.type);
+                        if (i == -1){
+                            i = 1000
+                        }
+                        if (j = -1){
+                            j = 1000
+                        }
+                        return i - j
+                    }
+
+                    if (a.z !== b.z){
+                        return a.z-b.z
+                    }
+
                     return a.mz - b.mz
+
                 });
+                fragments.forEach(console.log);
                 fragments.forEach(appendFragments);
+
 
                 var domain = {min: 0, max: containerWidth};
                 var newDomain = {min: 0, max: containerWidth};
@@ -775,7 +790,7 @@ var msmsv = function() {
                         }
                     }
 
-                    if (hasFoundPeak && isAboveThreshHold(bestPeak.int) && !usedPeak[bestPeak.mz]) {
+                    if (hasFoundPeak && isAboveThreshHold(bestPeak.int) && !usedPeak[bestPeak.mz.toString()]) {
 
                         usedPeak[bestPeak.mz] = true;
 
@@ -791,7 +806,6 @@ var msmsv = function() {
                         // Label the cluster
                         // console.log(peakClusters);
                         // console.log(fragment);
-
 
                         var hasFoundCluster = false;
                         var correspondingCluster;
@@ -809,7 +823,9 @@ var msmsv = function() {
                             for (var p in correspondingCluster){
                                 var pp = correspondingCluster[p][0];
                                 usedPeak[pp.mz] = true;
+
                                 //console.log(pp);
+
                                 pp = JSON.parse(JSON.stringify(pp));
                                 pp.color = fragment.color;
                                 if (pp.int > maxIntForLabel){
@@ -821,10 +837,10 @@ var msmsv = function() {
                             }
 
                         }
+                        //console.log(usedPeak);
 
                         fragment.labelInt = Math.max(fragment.int, maxIntForLabel);
                         newFragments.push(fragment);
-
                     }
                 }
 
