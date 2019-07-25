@@ -332,7 +332,7 @@ var msmsv = function() {
                     return a.mz - b.mz
 
                 });
-                fragments.forEach(console.log);
+                //fragments.forEach(console.log);
                 fragments.forEach(appendFragments);
 
 
@@ -983,7 +983,7 @@ var msmsv = function() {
         });
     }
 
-    function addTitles(container, titles, collapseAfter, titleTag) {
+    function addTitles(container, titles, collapseAfter, titleTag, displayBoolArray) {
         var containerEle = document.getElementsByClassName(container)[0];
 
         for (var i in containerEle.childNodes) {
@@ -1020,13 +1020,22 @@ var msmsv = function() {
                 }
             });
 
-            if (collapseAfter != undefined) {
+            if ( !collapseAfter ) {
                 if (i >= collapseAfter) {
                     titleEle.setAttribute("data-display", "false");
                     containerEle.childNodes[2 * i].setAttribute("style", "display: none")
                 } else {
                     titleEle.setAttribute("data-display", "true");
                     containerEle.childNodes[2 * i].setAttribute("style", "display: inline")
+                }
+            }else if( displayBoolArray != undefined){
+                var displayBool = true;
+                if (displayBoolArray[i] == false){
+                    displayBool = false;
+                }
+                if ( !displayBool ){
+                    titleEle.setAttribute("data-display", "false");
+                    containerEle.childNodes[2 * i].setAttribute("style", "display: none")
                 }
             }
 
