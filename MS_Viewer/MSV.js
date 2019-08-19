@@ -1020,7 +1020,7 @@ var msmsv = function() {
                 }
             });
 
-            if ( !collapseAfter ) {
+            if ( collapseAfter > 0 ) {
                 if (i >= collapseAfter) {
                     titleEle.setAttribute("data-display", "false");
                     containerEle.childNodes[2 * i].setAttribute("style", "display: none")
