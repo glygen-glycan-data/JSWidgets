@@ -130,7 +130,7 @@ var msmsv = function() {
 
         var annotation_data = null;
         if (params.hasOwnProperty("annotations")) {
-            d3.text(params["annotations"], function (data) {
+            textGetter.getText(params["annotations"], function (data) {
                 annotation_data = JSON.parse(data);
                 proceed();
             });
@@ -753,7 +753,10 @@ var msmsv = function() {
                     if (cascade) {
                         cTags[container].forEach(function (item, index, array) {
                             if (item != tag || metoo) {
-                                cCallbacks[container][item](clickScale(newDomain.min), clickScale(newDomain.max));
+                                // TODO
+                                // I am not sure what it do...
+                                // However it causes issue...
+                                // cCallbacks[container][item](clickScale(newDomain.min), clickScale(newDomain.max));
                             }
                         });
                     }
