@@ -1,8 +1,71 @@
 var cache = {};
 var callbacks = [];
 
+var textGetter = function () {
+    var status = {};
+    var cache = {};
+    var callbacks = {};
+
+    function getText(url, callback) {
+
+        if (!Object.keys(status).includes(url)){
+            status[url] = false;
+            callbacks[url] = [callback];
+            d3.text(url, function (d) {
+                status[url] = true;
+                cache[url] = d;
+
+                for (var cb of callbacks[url]){
+                    cb(cache[url]);
+                }
+            })
+        }
+        else if (status[url] == false){
+            callbacks[url].push(callback);
+        }else{
+            callback(cache[url])
+        }
+    }
+
+    return {
+        getText: getText
+    }
+}();
+
 function getSpectrum(url, format, scan, callback) {
-    // console.log(cache);
+
+    if ((format && format.toLowerCase() == "mgf") || /\.mgf$/i.test(url)) {
+        textGetter.getText(url, function (data) {
+            cache[url] = mgfparser(data);
+            callback(cache[url][scan]);
+            for (var i = 0, len = callbacks.length; i < len; i++) {
+                callbacks[i][1](cache[url][callbacks[i][0]]);
+            }
+        });
+    }
+
+    else if ((format && format.toLowerCase() == "json") || /\.json$/i.test(url)) {
+        textGetter.getText(url, function (data) {
+            cache[url] = jsonparser(data);
+
+            if (Object.keys(cache[url]).length == 1){
+                callback(cache[url][Object.keys(cache[url])[0]]);
+            }
+            else{
+                callback(cache[url][scan]);
+            }
+
+            for (var i = 0, len = callbacks.length; i < len; i++) {
+                callbacks[i][1](cache[url][callbacks[i][0]]);
+            }
+        });
+    }
+
+}
+
+
+function getSpectrumOld(url, format, scan, callback) {
+
     if (url in cache) {
         if (cache[url] === undefined) {
             callbacks.push([scan, callback]);
