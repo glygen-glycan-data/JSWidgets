@@ -26,6 +26,7 @@ var msmsv = function() {
             .attr("class", spcls(container, tag))
             .attr("width", width)
             .attr("height", height);
+        loadingStatus[container+"_"+tag] = false;
         if (!(container in cTags)) {
             // first reference to a specific container
             cTags[container] = [];
@@ -141,6 +142,7 @@ var msmsv = function() {
         function proceed() {
 
             getSpectrum(spectra, format, scan, function (spectrum) {
+                loadingStatus[container+"_"+tag] = true;
 
                 var peaks;
                 if (graphType == "chromatogram") {
@@ -753,10 +755,9 @@ var msmsv = function() {
                     if (cascade) {
                         cTags[container].forEach(function (item, index, array) {
                             if (item != tag || metoo) {
-                                // TODO
-                                // I am not sure what it do...
-                                // However it causes issue...
-                                // cCallbacks[container][item](clickScale(newDomain.min), clickScale(newDomain.max));
+                                if (zoomSync()){
+                                    cCallbacks[container][item](clickScale(newDomain.min), clickScale(newDomain.max));
+                                }
                             }
                         });
                     }
@@ -1048,6 +1049,24 @@ var msmsv = function() {
 
     }
 
+    var finsh = false;
+    function done() {
+        finsh = true;
+    }
+
+    var loadingStatus = {};
+    function zoomSync() {
+        for (var item of Object.keys(loadingStatus)){
+            if (!loadingStatus[item]){
+                return false
+            }
+        }
+        if (!finsh){
+            return false
+        }
+        return true
+    }
+
     return {
         spcls: spcls,
 
@@ -1071,7 +1090,9 @@ var msmsv = function() {
 
         deleteSpectrum: deleteSpectrum,
 
-        addTitles: addTitles
+        addTitles: addTitles,
+
+        done: done
 
     }
 
