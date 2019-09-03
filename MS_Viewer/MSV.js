@@ -26,7 +26,6 @@ var msmsv = function() {
             .attr("class", spcls(container, tag))
             .attr("width", width)
             .attr("height", height);
-        loadingStatus[container+"_"+tag] = false;
         if (!(container in cTags)) {
             // first reference to a specific container
             cTags[container] = [];
@@ -40,7 +39,7 @@ var msmsv = function() {
     }
 
     function showLabelledSpectrum(container, tag, params) {
-
+        loadingStatus[container+"_"+tag] = false;
         if (!(container in cTags) || cTags[container].indexOf(tag) < 0) {
             // console.log("append spectrum "+container+" "+tag);
             var width = params["width"] || 1000;
@@ -142,7 +141,6 @@ var msmsv = function() {
         function proceed() {
 
             getSpectrum(spectra, format, scan, function (spectrum) {
-                loadingStatus[container+"_"+tag] = true;
 
                 var peaks;
                 if (graphType == "chromatogram") {
@@ -890,9 +888,10 @@ var msmsv = function() {
                     return d3.selectAll("." + type + ".tip-" + spcls(container, tag));
                 }
 
-
+                loadingStatus[container+"_"+tag] = true;
             });
         }
+
     }
 
     var superScript = "⁰¹²³⁴⁵⁶⁷⁸⁹";
@@ -1051,7 +1050,10 @@ var msmsv = function() {
 
     var finsh = false;
     function done() {
-        finsh = true;
+        setTimeout(function () {
+            finsh = true;
+        },5000);
+
     }
 
     var loadingStatus = {};
