@@ -38,6 +38,9 @@ var msmsv = function() {
         }
     }
 
+    var resizeStuff = {};
+    var resizeConfig = {};
+
     function showLabelledSpectrum(container, tag, params) {
         loadingStatus[container+"_"+tag] = false;
         if (!(container in cTags) || cTags[container].indexOf(tag) < 0) {
@@ -592,11 +595,11 @@ var msmsv = function() {
                 // Disable the rectangles or the path
                 if (graphType == "chromatogram") {
                     elementGroup.selectAll("rect").remove()
-                        //style("display", "None");
+                    //style("display", "None");
                 }
                 else{
                     elementGroup.selectAll("path").remove()
-                        //.style("display", "None");
+                    //.style("display", "None");
                 }
 
                 var originalX;
@@ -749,12 +752,29 @@ var msmsv = function() {
                         });
 
                     fragmentLabelGroup.selectAll("text").attr("transform", "scale(" + [1 / scale, 1/scale2] + ")");
+                    resizeConfig[container] = {
+                        "a": clickScale(newDomain.min),
+                        "b": clickScale(newDomain.max)
+                    };
 
                     if (cascade) {
                         cTags[container].forEach(function (item, index, array) {
                             if (item != tag || metoo) {
                                 if (zoomSync()){
-                                    cCallbacks[container][item](clickScale(newDomain.min), clickScale(newDomain.max));
+                                    var spectrumClassName = container + "-" + item;
+                                    var zoomDecisionBasedOnDisplay = true;
+                                    try{
+                                        if (document.getElementsByClassName(spectrumClassName)[0].style['display'] == "none"){
+                                            zoomDecisionBasedOnDisplay = false
+                                        }
+                                    }
+                                    catch (e) {
+                                        console.log("Hmm, issue with: "+spectrumClassName);
+                                        //console.log("document.getElementsByClassName('"+spectrumClassName+"')[0].style['display'] == \"none\"");
+                                    }
+                                    if (zoomDecisionBasedOnDisplay){
+                                        cCallbacks[container][item](clickScale(newDomain.min), clickScale(newDomain.max));
+                                    }
                                 }
                             }
                         });
@@ -775,6 +795,27 @@ var msmsv = function() {
                     setDomain(a, b);
                     resizeEnded(false, false);
                 });
+
+                if (!Object.keys(resizeStuff).includes(container)){
+                    resizeStuff[container] = {};
+                }
+                resizeStuff[container][tag] = (function (a, b) {
+                    setDomain(a, b);
+                    resizeEnded(false, false);
+                });
+
+                var tempB = clickScale(newDomain.max);
+                if (!Object.keys(resizeConfig).includes(container)){
+                    resizeConfig[container] = {
+                        "a": 0,
+                        "b": 0
+                    }
+                }
+                if (tempB > resizeConfig[container]["b"]){
+                    resizeConfig[container]["b"] = tempB;
+                }
+                console.log(resizeConfig);
+
 
                 function appendFragments(fragment, i) {
 
@@ -986,7 +1027,7 @@ var msmsv = function() {
         });
     }
 
-    function addTitles(container, titles, collapseAfter, titleTag, displayBoolArray) {
+    function addTitles(container ,titles, collapseAfter, titleTag, displayBoolArray) {
         var containerEle = document.getElementsByClassName(container)[0];
 
         for (var i in containerEle.childNodes) {
@@ -1020,6 +1061,10 @@ var msmsv = function() {
                 } else {
                     containerEle.childNodes[index * 2 + 1].setAttribute("style", "display: inline");
                     this.setAttribute("data-display", "true");
+
+                    var tag = containerEle.childNodes[index * 2 + 1].getAttribute("class").split("-")[1];
+                    //console.log(resizeConfig);
+                    resizeStuff[container][tag](resizeConfig[container]["a"],resizeConfig[container]["b"])
                 }
             });
 
@@ -1068,6 +1113,8 @@ var msmsv = function() {
         }
         return true
     }
+
+
 
     return {
         spcls: spcls,
