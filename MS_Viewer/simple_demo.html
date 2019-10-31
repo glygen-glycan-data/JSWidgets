@@ -4,56 +4,59 @@
 <head>
     <title>Spectrum Viewer</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="spectrum-viewer.css" type="text/css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js" charset="utf-8"></script>
-    <script src="https://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
-    <script src="MSV.js"></script>
-    <script src="spectrum-parsers.js"></script>
-    <script src="util.js"></script>
+    <link rel="stylesheet" href="./spectrum-viewer.css" type="text/css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.12.0/d3.min.js" charset="utf-8"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.9.1/d3-tip.min.js"></script>
+    <script src="./MSV.js"></script>
+    <script src="./spectrum-parsers.js"></script>
+    <script src="./util.js"></script>
 </head>
 <body>
-<h1>Click on the title to collapse or extend the mass spectra.</h1>
-<div class="specpanel1"></div>
-<div class="specpanel2" style="border: lightblue"></div>
+<div id="container"></div>
 <script type="text/javascript">
+    "use strict";
 
-    params = {
-        spectra: "test_data/PE000369.4.json",
-        format: "json",
-        zoomHeight: true
-    };
-    params["graphtype"] = "chromatogram";
-    params["width"] = params["width"] || document.body.clientWidth;
+    var msv_instance = msv();
 
-    msmsv.showLabelledSpectrum('specpanel1','spec'+"x",params);
+    msv_instance.addLabelledSpectrum("container", 4200, {
+        "spectra": "./sample_data/chromatogram.json",
+        "titleTag": "h3",
+        "title": "Chromatogram",
+        "graphtype": "chromatogram",
+        "zoomgroup": "11"
+    });
 
-    params = {
-        spectra: "test_data/",
-        format: "json",
-        annotations: "test_data/PE000021.4.JSON",
-        zoomHeight: false
-    };
+    msv_instance.addLabelledSpectrum("container", 4100, {
+        "spectra": "./sample_data/ms2.json",
+        "annotations": "./sample_data/fragment.json",
+        "titleTag": "h3",
+        "title": "Spectrum 1 Zooming Group 1",
+        "zoomgroup": "4"
+    });
+    msv_instance.addLabelledSpectrum("container", 4102, {
+        "spectra": "./sample_data/ms2x.json",
+        "annotations": "./sample_data/fragment.json",
+        "titleTag": "h3",
+        "title": "Spectrum 2 Zooming Group 1",
+        "zoomgroup": "4"
+    });
+    msv_instance.addLabelledSpectrum("container", 4103, {
+        "spectra": "./sample_data/ms2x.json",
+        "annotations": "./sample_data/fragment.json",
+        "titleTag": "h3",
+        "show": false,
+        "title": "Spectrum 3 (Click me!)",
+        "zoomgroup": "4"
+    });
+    msv_instance.addLabelledSpectrum("container", 4104, {
+        "spectra": "./sample_data/ms2.json",
+        "annotations": "./sample_data/fragment.json",
+        "titleTag": "h3",
+        "title": "Spectrum 4 independent",
+        "zoomgroup": "10"
+    });
 
-    params["width"] = params["width"] || document.body.clientWidth;
-    var scans = [12861, 12864, 13060, 13063];
-
-    for (var sc of scans) {
-        params["scan"] = sc;
-        // console.log(params);
-        params["spectra"] = "test_data/" +sc + ".json";
-        msmsv.showLabelledSpectrum('specpanel2','spec'+sc,params);
-    }
-
-    var titles = [];
-    for (var i in scans){
-        var titleCont = "Mass Spectra for Scan Number: "+scans[i];
-        titles.push(titleCont);
-    }
-
-    // msmsv.addTitles('specpanel2', titles, 0, "h2", [false, false, true, false]);
-    msmsv.addTitles('specpanel2', titles, 0, "h2", [true, true, true, true]);
-    msmsv.done();
-
+    msv_instance.done();
 
 </script>
 </body>
