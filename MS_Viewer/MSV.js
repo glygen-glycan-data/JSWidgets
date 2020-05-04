@@ -87,7 +87,7 @@ var msv = function () {
     var cDims = {};
     var cMaxMZ = {};
     var cCallbacks = {};
-    
+
     // Get info
     var centralControl = function () {
 
@@ -768,7 +768,7 @@ var msv = function () {
                     break
                 }
                 line.dots = reduceRedundantPeaks(line.dots)
-                line.colorKey = i/Math.min(10, chromatogram_peaks.length)*100; // change 10 to length of chromatogram_peaks
+                line.colorKey = i;
                 line.shadingOP = 0;
                 tmp_c.push(line)
             }
@@ -940,7 +940,6 @@ var msv = function () {
 
 
         var MCColorScale = d3.scaleOrdinal()
-            .domain([0, 100])
             .range(d3.schemeSet2);
 
         var drag = d3.drag()
