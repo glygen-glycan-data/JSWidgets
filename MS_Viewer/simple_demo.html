@@ -18,42 +18,62 @@
 
     var msv_instance = msv();
 
-    msv_instance.addLabelledSpectrum("container", 4200, {
+    msv_instance.addLabelledSpectrum("container", 0, {
+        "spectra": "./sample_data/data1.json",
+        "titleTag": "h3",
+        "title": "Graph 1",
+        "graphtype": "ms2",
+        "zoomgroup": "0"
+    });
+
+    msv_instance.addLabelledSpectrum("container", 4, {
         "spectra": "./sample_data/chromatogram.json",
         "titleTag": "h3",
-        "title": "Chromatogram",
+        "title": "Chromatogram A",
         "graphtype": "chromatogram",
         "zoomgroup": "11"
     });
 
-    msv_instance.addLabelledSpectrum("container", 4100, {
-        "spectra": "./sample_data/ms2.json",
-        "annotations": "./sample_data/fragment.json",
+    msv_instance.addLabelledSpectrum("container", 1, {
+        "spectra": "./sample_data/chromatogram.json",
         "titleTag": "h3",
-        "title": "Spectrum 1 Zooming Group 1",
+        "title": "Chromatogram B",
+        "graphtype": "chromatogram",
         "zoomgroup": "4"
     });
-    msv_instance.addLabelledSpectrum("container", 4102, {
-        "spectra": "./sample_data/ms2x.json",
-        "annotations": "./sample_data/fragment.json",
+
+    msv_instance.addLabelledSpectrum("container", 2, {
+        "spectra": "./sample_data/PE000050.3.50.json",
         "titleTag": "h3",
-        "title": "Spectrum 2 Zooming Group 1",
-        "zoomgroup": "4"
+        "title": "Multi Chromatogram A",
+        "graphtype": "multi-chromatogram",
+        "zoomgroup": "4",
+        "zoomHeight": true
     });
+
+    msv_instance.addLabelledSpectrum("container", 3, {
+        "spectra": "./sample_data/PE000050.4.50.json",
+        "titleTag": "h3",
+        "title": "Multi Chromatogram B",
+        "graphtype": "multi-chromatogram",
+        "zoomgroup": "4",
+        "zoomHeight": true
+    });
+
     msv_instance.addLabelledSpectrum("container", 4103, {
         "spectra": "./sample_data/ms2x.json",
         "annotations": "./sample_data/fragment.json",
         "titleTag": "h3",
         "show": false,
-        "title": "Spectrum 3 (Click me!)",
-        "zoomgroup": "4"
+        "title": "Spectrum 1 (Click me!)",
+        "zoomgroup": "54"
     });
     msv_instance.addLabelledSpectrum("container", 4104, {
         "spectra": "./sample_data/ms2.json",
         "annotations": "./sample_data/fragment.json",
         "titleTag": "h3",
-        "title": "Spectrum 4 independent",
-        "zoomgroup": "10"
+        "title": "Spectrum 2",
+        "zoomgroup": "54"
     });
 
     msv_instance.done();

@@ -679,14 +679,35 @@ var msv = function () {
         var graphType = params["graphtype"];
         var zoomHeight = params["zoomHeight"];
 
-        var peaks;
+        var eachLineTmp = {"dots": [], "max": 0, sortValue: 1000};
+
+        var peaks = [];
+        var chromatogram_peaks = [];
         if (graphType == "chromatogram") {
-            peaks = [];
+            var eachLine = JSON.parse(JSON.stringify(eachLineTmp));
             for (var i in spectrum.peaks) {
                 i = parseInt(i);
                 peaks.push({mz: spectrum.peaks[i].rt, int: spectrum.peaks[i].int});
+                eachLine.dots.push({mz: spectrum.peaks[i].rt, int: spectrum.peaks[i].int});
+                //if (spectrum.peaks[i].int > eachLine.max){
+                //    eachLine.max = spectrum.peaks[i].int;
+                //}
             }
+            chromatogram_peaks.push(eachLine);
             // peaks = spectrum.peaks;
+        } else if (graphType == "multi-chromatogram") {
+            for (var sp of spectrum.series) {
+                var eachLine = JSON.parse(JSON.stringify(eachLineTmp));
+                eachLine.sortValue = sp.obs_relint;
+                for (var p of sp.pairs) {
+                    peaks.push({mz: p[0], int: p[1]});
+                    eachLine.dots.push({mz: p[0], int: p[1]});
+                    //if (p[1] > eachLine.max){
+                    //    eachLine.max = p[1];
+                    //}
+                }
+                chromatogram_peaks.push(eachLine);
+            }
         } else if(spectrum.hasOwnProperty('peaks')){
             peaks = spectrum.peaks;
         }else{
@@ -733,7 +754,31 @@ var msv = function () {
 
         // Get rid off continuous peak with 0 intensity
         if (graphType == "chromatogram"){
-            peaks = reduceRedundantPeaks(peaks);
+            //peaks = reduceRedundantPeaks(peaks);
+        }
+
+        if (graphType.includes("chromatogram")){
+            var tmp_c = [];
+            var i = 0;
+            for (var line of chromatogram_peaks.sort(function (a,b) {
+                return b.sortValue - a.sortValue
+            })){
+                i+=1;
+                if (i > 20){
+                    break
+                }
+                line.dots = reduceRedundantPeaks(line.dots)
+                line.colorKey = i/Math.min(10, chromatogram_peaks.length)*100; // change 10 to length of chromatogram_peaks
+                line.shadingOP = 0;
+                tmp_c.push(line)
+            }
+            chromatogram_peaks = tmp_c;
+            chromatogram_peaks[chromatogram_peaks.length-1].lineColor = "grey";
+
+            if (chromatogram_peaks.length == 1){
+                chromatogram_peaks[0].lineColor = "black";
+                chromatogram_peaks[0].shadingOP = 0.7;
+            }
         }
 
 
@@ -770,12 +815,12 @@ var msv = function () {
         }
         fragments.forEach(appendFramentsWrapper);
 
-        drawStuff(container, tag, maxPeaksMZ, maxPeaksInt, peaks, colorThePeak, newFragments, graphType, zoomHeight, !displayFlag);
+        drawStuff(container, tag, maxPeaksMZ, maxPeaksInt, peaks, chromatogram_peaks, colorThePeak, newFragments, graphType, zoomHeight, !displayFlag);
     }
 
 
 
-    function drawStuff(container, tag, maxPeaksMZ, maxPeaksInt, peaks, colorThePeak, newFragments, graphType, zoomHeight, delayLoading){
+    function drawStuff(container, tag, maxPeaksMZ, maxPeaksInt, peaks, chromatogram_peaks, colorThePeak, newFragments, graphType, zoomHeight, delayLoading){
 
         var margin = {top: 10, bottom: 20, left: 80, right: 40};
 
@@ -812,8 +857,8 @@ var msv = function () {
         }
 
         var chromatogramPeaks = [];
-        if (graphType == "chromatogram") {
-            chromatogramPeaks = JSON.parse(JSON.stringify(peaks));
+        if (graphType.includes("chromatogram")) {
+            chromatogramPeaks = JSON.parse(JSON.stringify(chromatogram_peaks));
             peaks = [];
         }
 
@@ -893,8 +938,11 @@ var msv = function () {
             .domain([0, containerWidth])
             .range(["skyBlue", "steelblue"]);
 
-        // TODO Drag behavior will not listen to click event any more...
-        // Need alternative solution for reset zoom range by right click
+
+        var MCColorScale = d3.scaleOrdinal()
+            .domain([0, 100])
+            .range(d3.schemeSet2);
+
         var drag = d3.drag()
             .on("start", dragStarted)
             .on("drag", dragged)
@@ -1089,14 +1137,23 @@ var msv = function () {
             });
 
         var chromatographLineElements = chromatographLine.selectAll("path")
-            .data([chromatogramPeaks])
+            .data(chromatogramPeaks)
             .enter()
             .append("g")
             .append("path")
-            .attr('d', newLine)
-            .attr("stroke", "black")
+            .attr('d', function (d) {
+                return newLine(d.dots)
+            })
+            .attr("stroke", function (d) {
+                if (d.lineColor != undefined){
+                    return d.lineColor
+                }
+                return MCColorScale(d.colorKey)
+            })
             .attr("fill", colorTheme.auc)
-            .attr("fill-opacity", "0.7")
+            .attr("fill-opacity", function (d) {
+                return d.shadingOP
+            })
             .attr("shape-rendering", "geometricPrecision")
             .attr("vector-effect", "non-scaling-stroke")
             .attr("stroke-width", 1)
@@ -1272,7 +1329,11 @@ var msv = function () {
             var maxIntinViewField = 1;
 
 
-            for (var dot of peaks.concat(chromatogramPeaks)){
+            var alldotstmp = JSON.parse(JSON.stringify(peaks));
+            for (var line of chromatogramPeaks){
+                alldotstmp = alldotstmp.concat(line.dots);
+            }
+            for (var dot of alldotstmp){
                 if (dot.mz >= minMZinViewField && dot.mz <= maxMZinViewField ){
                     if (dot.int > maxIntinViewField){
                         maxIntinViewField = dot.int;
