@@ -363,7 +363,7 @@ var msv = function () {
         var j = parseInt(i - i % 1);
         var k = j % MCColorTheme.length;
 
-        return MCColorTheme[i]
+        return MCColorTheme[k]
     }
 
 
