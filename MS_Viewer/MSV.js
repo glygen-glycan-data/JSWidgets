@@ -344,6 +344,28 @@ var msv = function () {
         auc: "lightgrey"
     };
 
+    var MCColorTheme = [
+        "#1f78b4",
+        "#33a02c",
+        "#e31a1c",
+        "#ff7f00",
+        "#6a3d9a",
+        "#b15928",
+        "#a6cee3",
+        "#b2df8a",
+        "#fb9a99",
+        "#fdbf6f",
+        "#cab2d6",
+        "#ffff99"
+    ];
+
+    var MCColorScale = function (i) {
+        var j = parseInt(i - i % 1);
+        var k = j % MCColorTheme.length;
+
+        return MCColorTheme[i]
+    }
+
 
     // Computing functions
     function peakClusterRecognition(peaks){
@@ -763,17 +785,17 @@ var msv = function () {
             for (var line of chromatogram_peaks.sort(function (a,b) {
                 return b.sortValue - a.sortValue
             })){
-                i+=1;
-                if (i > 20){
+                if (i > 50){
                     break
                 }
                 line.dots = reduceRedundantPeaks(line.dots)
                 line.colorKey = i;
                 line.shadingOP = 0;
                 tmp_c.push(line)
+
+                i+=1;
             }
             chromatogram_peaks = tmp_c;
-            chromatogram_peaks[chromatogram_peaks.length-1].lineColor = "grey";
 
             if (chromatogram_peaks.length == 1){
                 chromatogram_peaks[0].lineColor = "black";
@@ -937,10 +959,6 @@ var msv = function () {
         var colorScale = d3.scaleLinear()
             .domain([0, containerWidth])
             .range(["skyBlue", "steelblue"]);
-
-
-        var MCColorScale = d3.scaleOrdinal()
-            .range(d3.schemeSet2);
 
         var drag = d3.drag()
             .on("start", dragStarted)
@@ -1143,7 +1161,7 @@ var msv = function () {
             .attr('d', function (d) {
                 return newLine(d.dots)
             })
-            .attr("stroke", function (d) {
+            .attr("stroke", function (d, i) {
                 if (d.lineColor != undefined){
                     return d.lineColor
                 }
@@ -1155,7 +1173,7 @@ var msv = function () {
             })
             .attr("shape-rendering", "geometricPrecision")
             .attr("vector-effect", "non-scaling-stroke")
-            .attr("stroke-width", 1)
+            .attr("stroke-width", 2)
             .style("z-index","-1999");
 
         chromatographLineElements.transition()
@@ -1441,7 +1459,8 @@ var msv = function () {
 
     return {
         addLabelledSpectrum: addLabelledSpectrum,
-        done: centralControl.done
+        done: centralControl.done,
+        MCColor: MCColorScale,
     }
 
 };
