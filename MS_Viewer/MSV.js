@@ -344,13 +344,15 @@ var msv = function () {
         auc: "lightgrey"
     };
 
-    var MCColorTheme = [
+    var MCColorThemeDark = [
         "#1f78b4",
         "#33a02c",
         "#e31a1c",
         "#ff7f00",
         "#6a3d9a",
         "#b15928",
+    ];
+    var MCColorThemeLight = [
         "#a6cee3",
         "#b2df8a",
         "#fb9a99",
@@ -361,9 +363,11 @@ var msv = function () {
 
     var MCColorScale = function (i) {
         var j = parseInt(i - i % 1);
-        var k = j % MCColorTheme.length;
-
-        return MCColorTheme[k]
+        if (j < MCColorThemeDark.length - 1){
+            return MCColorThemeDark[j]
+        }
+        var k = j % MCColorThemeDark.length;
+        return MCColorThemeLight[k]
     }
 
 
@@ -1153,6 +1157,10 @@ var msv = function () {
                 return containerHeight - heightScale(d.int)
             });
 
+        var chromatographLineWidth = 1;
+        if (chromatogramPeaks.length > 1){
+            chromatographLineWidth = 2;
+        }
         var chromatographLineElements = chromatographLine.selectAll("path")
             .data(chromatogramPeaks)
             .enter()
@@ -1173,7 +1181,7 @@ var msv = function () {
             })
             .attr("shape-rendering", "geometricPrecision")
             .attr("vector-effect", "non-scaling-stroke")
-            .attr("stroke-width", 2)
+            .attr("stroke-width", chromatographLineWidth)
             .style("z-index","-1999");
 
         chromatographLineElements.transition()
