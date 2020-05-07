@@ -362,8 +362,8 @@ var msv = function () {
     ];
 
     var MCColorScale = function (i) {
-        var j = parseInt(i - i % 1);
-        if (j < MCColorThemeDark.length - 1){
+        var j = parseInt(i);
+        if (j < MCColorThemeDark.length){
             return MCColorThemeDark[j]
         }
         var k = j % MCColorThemeDark.length;
