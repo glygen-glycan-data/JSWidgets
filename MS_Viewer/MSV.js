@@ -1176,7 +1176,6 @@ var msv = function () {
                 return newLine(d.dots)
             })
             .attr("id", function (d, i) {
-                console.log(container + "-" + tag + "-chromatogram-" + i)
                 return container + "-" + tag + "-chromatogram-" + i
             })
             .attr("stroke", function (d, i) {
