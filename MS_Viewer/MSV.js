@@ -705,6 +705,9 @@ var msv = function () {
         var graphType = params["graphtype"];
         var zoomHeight = params["zoomHeight"];
 
+        var rangeStart = params["range_start"];
+        var rangeEnd = params["range_end"];
+
         var eachLineTmp = {"dots": [], "max": 0, sortValue: 1000};
 
         var peaks = [];
@@ -841,12 +844,12 @@ var msv = function () {
         }
         fragments.forEach(appendFramentsWrapper);
 
-        drawStuff(container, tag, maxPeaksMZ, maxPeaksInt, peaks, chromatogram_peaks, colorThePeak, newFragments, graphType, zoomHeight, !displayFlag);
+        drawStuff(container, tag, maxPeaksMZ, maxPeaksInt, peaks, chromatogram_peaks, colorThePeak, newFragments, graphType, zoomHeight, !displayFlag, rangeStart, rangeEnd);
     }
 
 
 
-    function drawStuff(container, tag, maxPeaksMZ, maxPeaksInt, peaks, chromatogram_peaks, colorThePeak, newFragments, graphType, zoomHeight, delayLoading){
+    function drawStuff(container, tag, maxPeaksMZ, maxPeaksInt, peaks, chromatogram_peaks, colorThePeak, newFragments, graphType, zoomHeight, delayLoading, rangeStart, rangeEnd){
 
         var margin = {top: 10, bottom: 20, left: 80, right: 40};
 
@@ -878,6 +881,9 @@ var msv = function () {
                     centralControl.zoomToCurrent(centralControl.buildID(container, tag))
                 }else{
                     centralControl.drawingFinished(centralControl.buildID(container, tag));
+                    if (rangeStart != undefined && rangeEnd != undefined){
+                        centralControl.resize(centralControl.buildID(container, tag), rangeStart, rangeEnd)
+                    }
                 }
             }
         }
