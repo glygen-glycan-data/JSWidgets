@@ -1,10 +1,10 @@
 <HTML>
 <HEAD>
-<link rel="stylesheet" type="text/css" href="http://edwardslab.bmcb.georgetown.edu/css/excel-2007.css">
+<link rel="stylesheet" type="text/css" href="excel-2007.css">
 </HEAD>
 <BODY>
-<SCRIPT type="text/javascript" src="http://edwardslab.bmcb.georgetown.edu/js/list.d3table.js"></SCRIPT>
-<SCRIPT type="text/javascript" src="http://d3js.org/d3.v2.min.js"></script>
+<SCRIPT type="text/javascript" src="list.d3table.js"></SCRIPT>
+<SCRIPT type="text/javascript" src="d3.v2.min.js"></script>
 <DIV align="center" id="container"></DIV>
 <SCRIPT type="text/javascript">
 
@@ -87,8 +87,16 @@
           }
 	  return 0;
     }    
+    function urlIntCompare(a,b) {
+	  var av = urlText(a.values()[value]);
+	  var bv = urlText(b.values()[value]);
+          return (parseFloat(empty2number(av)) - parseFloat(empty2number(bv)));
+    }    
     function urlSort(valueName) {
       mySort(valueName,urlCompare);
+    }
+    function urlIntSort(valueName) {
+      mySort(valueName,urlIntCompare);
     }
     function oddevenvalue(row) {
         var thevalue = "";
@@ -97,9 +105,6 @@
               value = ListJsHelpers.getAttribute(sortButtons[i], 'data-sort');
               thevalue += thevalue + ('|' + row.values()[value]);
             }
-        }
-        if (thevalue == "") {
-          thevalue = j;
         }
         return thevalue;
     }
@@ -110,10 +115,13 @@
       var j = 0;
       for (var i = 1; i < nrows; i++) {
 	  var newValue = oddevenvalue(thetable.items[i-1]);
-        if (newValue != theValue) {
-          j = j + 1;
-          theValue = newValue;
-        }
+          if (newValue == "") {
+             newValue = j;
+          }
+          if (newValue != theValue) {
+            j = j + 1;
+            theValue = newValue;
+          }
         if (j % 2 == 0) {
           ListJsHelpers.removeClass(rows[i],'odd');
           ListJsHelpers.addClass(rows[i],'even');
@@ -127,6 +135,9 @@
                                                                                                               
 
 var dataurl=window.location.search.substring(1);
+if (!dataurl) {
+    dataurl="data.tsv"
+}
 if (dataurl) {
 
   var baseurl=dataurl.substring(0,dataurl.lastIndexOf("/")+1);
@@ -178,20 +189,37 @@ if (dataurl) {
 	      return "mysort";
             })
 	    .attr("data-sort",function(column) { return column.tag; })
-	    .attr("data-type",function(column) { return column.type; })
+	    .attr("data-type",function(column) { 
+                if (column.type == "extid") {
+                    if (column.idtype == "int") {
+                      return "urlint"
+                    } else {
+                      return "url"
+                    }
+                } else {
+                    return column.type;
+                }
+            })
             .text(function(column) { return column.label; });
 
     // create a row for each object in the data
     var rows = tbody.selectAll("tr")
         .data(data)
         .enter()
-        .append("tr");
+        .append("tr")
+            .attr("class",function(r,i) {
+              if (i > 1000000000000) {
+		return "rowhide";
+              } else {
+		return "rowshow";
+              }
+            });
 
     // create a cell in each row for each column
     var cells = rows.selectAll("td")
         .data(function(row,i) {
             return columns.map(function(column) {
-		return {column: column, value: row[column.tag]};
+		return {column: column, value: row[column.tag], row: row};
             });
         })
         .enter()
@@ -210,7 +238,7 @@ if (dataurl) {
 	      if (d.column.type == "float" && d.column.fixed !== undefined) {
 	        return parseFloat(d.value).toFixed(d.column.fixed);
               } else if (d.column.type == "extid" && d.column.exturl !== undefined) {
-	        return "<A href="+d.column.exturl+d.value+">"+d.value+"</A>";
+	        return "<A href="+d.column.exturl+d.value+" target=\"_blank\">"+d.value+"</A>";
               } else if (d.column.type == "img" && d.column.imgurl !== undefined) {
 	        url = d.column.imgurl.replace(/{}/g, d.value);
 		var height = ""
@@ -220,10 +248,14 @@ if (dataurl) {
 		if (d.column.width !== undefined) {
 		  width = " width=\""+d.column.width+"\"";
 		}
-		if (d.column.caption) {
-		  return "<P align=\"center\"><IMG style=\"margin: 10px;\" src=\""+url+"\""+height+width+"><br/>"+d.value+"</P>";
+		if (d.column.caption !== undefined) {
+		  return "<P align=\"center\"><IMG style=\"margin: 10px;\" src=\""+url+"\""+height+width+" loading=\"lazy\" ><br/>"+d.value+"</P>";
 		}
-	        return "<IMG src=\""+url+"\""+height+width+">";
+                if (d.column.exturl !== undefined) {
+                  var exturl = d.column.exturl.replace(/{}/g, d.row[d.column.exturltag]);
+	          return "<A href=\""+exturl+"\" target=\"_blank\"><IMG src=\""+url+"\""+height+width+" loading=\"lazy\" ></A>";
+                }
+	        return "<IMG src=\""+url+"\""+height+width+" loading=\"lazy\" >";
               };
 	      return d.value; 
 	    });
@@ -250,6 +282,11 @@ if (dataurl) {
             ListJsHelpers.addEvent(button,'click', urlSort);
 	    if (oddevenbool) {
 	      urlSort(obj);
+            }
+        } else if (type == 'urlint') {
+            ListJsHelpers.addEvent(button,'click', urlIntSort);
+	    if (oddevenbool) {
+	      urlIntSort(obj);
             }
         } else {
 	    ListJsHelpers.addEvent(button,'click', stringSort);
